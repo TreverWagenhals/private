@@ -3,13 +3,14 @@ import time
 from euler_funcs import isPrime
 from euler_funcs import primesfrom2to
 from euler_funcs import divide
+from euler_funcs import factors
 from decimal import *
+from sets import *
 from sympy import sieve
 import numpy
 import itertools
 from itertools import permutations
-from fractions import Fraction  
-import csv
+from fractions import Fraction
 
 def problem_99():
     f = open('problem_99.txt', 'r')
@@ -423,8 +424,60 @@ def problem_31():
         
 def problem_24():
     print list(itertools.permutations([0,1,2,3,4,5,6,7,8,9], 10))[999999]
-       
+    
+def problem_20():
+    print sum([int(i) for i in str(math.factorial(100))])
+    
+def problem_47():
+    consecutive = 0
+    for j in range(1,1000000):
+        prime_counter = 0
+        fac = factors(j)
+        for primes in fac:
+            if isPrime(int(primes)):
+                prime_counter += 1
+        if prime_counter >= 4:
+            if consecutive == 0:
+                consecutive += 1
+                first = j
+            elif consecutive == 1 and j == first + 1:
+                consecutive += 1
+                second = j
+            elif consecutive == 2 and j == second + 1:
+                consecutive += 1
+                third = j
+            elif consecutive == 3 and j == third + 1:
+                print j - 3
+                break
+        else:
+            consecutive = 0 
+        
+def problem_45():
+    triangle = set()
+    pentagonal = set()
+    hexagonal = set()
+    for k in range(1, 100000):
+        triangle.add(k*(k+1)/2)
+        pentagonal.add(k * (k * 3 - 1) / 2)
+        hexagonal.add(k*(k*2 -1))
+    
+    print triangle.intersection(pentagonal.intersection(hexagonal))
+    
+    
+def problem_49():
+    prime_list = []
+    for i in range(1000, 10001):
+        if isPrime(i):
+            prime_list.append(i)
+            
+    for j in range(0, len(prime_list)):
+        for k in range(j+1, len(prime_list)):
+            difference = prime_list[k] - prime_list[j]
+            if prime_list[k] + difference in prime_list:
+                if sorted(str(prime_list[j])) == sorted(str(prime_list[k])) == sorted(str(prime_list[k] + difference)):
+                    print str(prime_list[j]) + str(prime_list[k]) + str(prime_list[k] + difference)
+            
     
 start_time = time.time()
-problem_12()
+problem_49()
 print (time.time() - start_time), "Seconds"
