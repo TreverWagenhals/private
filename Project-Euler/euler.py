@@ -140,67 +140,34 @@ def problem_30():
 			total += temp
 			
 	print "TOTAL IS", total
-		
-		
-# def problem_18():
-	# f = open('problem_18.txt', 'r')
-	# row = f.readline()
-	# total = int(row)
-	# print total
-	# number = 0
-	# for i in range (2, 16):
-		# row = f.readline()
-		# first_number = int(row[number:number+2])
-		# second_number = int(row[number+3:number+5])
-			
-		# if second_number > first_number:
-			# print "The old total was", total, ". The second number (", second_number, ") was larger than the first (", first_number, ")"
-			# print total, "+", second_number, "=", total+second_number
-			# total += int(second_number)
-			# number = number + 3
-		# else:
-			# print "The old total was", total, ". The first number (", first_number, ") was larger than the second (", second_number, ")"
-			# print total, "+", first_number, "=", total+first_number
-			# total += int(first_number)
 	
-	# print total
-	
-# def problem_18_bottom_top():
-	# f = open('problem_18.txt', 'r')
-	# row = f.readlines()
-	# bottom_row = row[14]
-	
-	# for j in range(0,43, 3):
-		# bottom_variable = bottom_row[j:j+2]
-		# number = j
-		# total = int(bottom_variable)
-		# max_number = 42
-
-		# for i in range (13, -1, -1):
-			# row_variables = row[i]
-			# if number == 0:
-				# total += int(row_variables[number:number+2])
-			# elif number == max_number:
-				# total += int(row_variables[number-3:number-1])
-				# number -= 3
-			# else:
-				# if i != 0:
-					# first_number = int(row_variables[number-3:number-1])
-					# second_number = int(row_variables[number:number+2])
-
-					# if first_number > second_number:
-						# total += int(first_number)
-						# number -= 3
-					# else:		
-						# total += int(second_number)
-				# else:
-					# total += 75
-					
-			# max_number -= 3
-					
-		# print "The total starting at", bottom_variable, "is", total
-		
-		
+def problem_18_67(problem):
+    if problem == 18:
+        size_of_triangle = 15
+        f = open('problem_18.txt', 'r')
+    elif problem == 67:
+        size_of_triangle = 100
+        f = open('problem_67.txt', 'r')
+        
+    rows = []
+    
+    for i in range(0,size_of_triangle):
+        rows.append(f.readline().strip().split(" "))
+        map(int, rows[i])
+    rows = [map(int, x) for x in rows]
+    
+    for row in range(size_of_triangle-1,0,-1):
+        if rows[row][row] > rows[row][row-1]:
+            rows[row-1][row-1] += rows[row][row]
+        else:
+            rows[row-1][row-1] += rows[row][row-1]
+        for element in range(row - 2, -1, -1):
+                    if rows[row][element] > rows[row][element+1]:
+                        rows[row-1][element] += rows[row][element]
+                    else: 
+                        rows[row-1][element] += rows[row][element+1]
+                    
+    print rows[0]
             
 def problem_42():
 	f = open('problem_42.txt', 'r')
@@ -255,19 +222,25 @@ def problem_9():
                     print a*b*c
                     return 0
          
-# def problem_12():
-    # triangle = 1
-    # counter = 0
-    # for i in xrange(1, 10000000):
-        # triangle += i + 1
-        # for j in range (1, triangle+1):
-            # if triangle % j == 0:
-                # counter = counter + 1
-        # if counter == 501:
-            # print triangle
-            # break
-        # else:
-            # counter = 0
+def problem_12():
+    triangle = 1
+    def divisors(n):
+        count = 2
+        i = 2
+        while(i**2 < n):
+            if (n % i == 0):
+                count += 2
+            i += 1
+        if i **2 == n:
+            count += 1
+        return count  
+
+    for i in xrange(1, 10000000):
+        counter = 0
+        triangle += i + 1
+        if divisors(triangle) > 500:
+            print triangle
+            break
     
     
 def problem_206():
@@ -277,17 +250,16 @@ def problem_206():
             print i
             break
             
-# def problem_80():
-    # getcontext().prec = 100
-    # digital_total = 0
-    # for i in range(1, 101):
-        # total = 0
-        # total += Decimal(i).sqrt()  
-    
-        # for k in range(1,98):
-            # digital_total += int(str(total)[-k])
-    
-    # print digital_total
+def problem_80():
+    getcontext().prec = 102
+    total = 0
+    for i in range(1, 101):
+        if (i != 1) and (i != 4) and (i != 9) and (i != 16) and (i != 25) and (i != 36) and (i != 49) and (i != 64) and (i != 81) and (i != 100):
+            square = str(Decimal(i).sqrt())  
+            total += int(square[0])
+            for decimals in range(101, 2, -1):
+                total += int(square[-decimals])
+    print total
 
 def problem_92():
     counter = 0
@@ -359,29 +331,7 @@ def problem_41():
         if isPrime(int(perms[j])):
             print perms[j]
             break
-     
-    """ FIRST ATTEMPT THAT FAILED """
-    # primes = primesfrom2to(1000000000)
-    # for i in xrange(len(primes)-1, 0, -1):          # we have the array of all primes. we go from last prime to first prime
-        # numbers_match = False
-        # for j in xrange(0,len(str(primes[i]))):                 # then, we have the length of the particular value in the array
-            # if numbers_match == True:
-                # break
-            # for k in xrange(j+1,len(str(primes[i]))):           # next, we need to check that the current number in the value does not match any other numbers in the number
-                # if str(primes[i])[k] == str(primes[i])[j]:
-                    # numbers_match = True
-                    # break
-                    
-        # if numbers_match == False:                      # There are no matching numbers at this point. we still need to check to see if they increment though
-            # for m in range(0, len(str(primes[i])) - 1):
-                # if int(sorted(str(primes[i]))[m])+1 != int(sorted(str(primes[i]))[m+1]):
-                    # incremental = False
-                    # break
-                    
-                # if incremental == True:    
-                    # print str(primes[i])
-                    
-                    
+                        
 def problem_39():
     sum = 0
     longest_len = 0
@@ -473,7 +423,8 @@ def problem_31():
         
 def problem_24():
     print list(itertools.permutations([0,1,2,3,4,5,6,7,8,9], 10))[999999]
+       
     
 start_time = time.time()
-problem_31()
+problem_12()
 print (time.time() - start_time), "Seconds"
