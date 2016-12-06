@@ -7,7 +7,7 @@ from sympy import sieve
 import numpy as np
 from itertools import *
 from fractions import Fraction
-import operator
+from operator import *
 from operator import xor
 from statistics import mode
 
@@ -27,6 +27,27 @@ class Problem(object):
                 largest_line = i + 1                                            # Get the line number for new largest solution. Line is +1 since list starts at 0, not 1
                               
        print largest_line    
+       
+       
+   def problem_50(self):
+       highest = 0
+       longest_counter = 0
+       primes = primesfrom2to(10000)
+       for i in range(0, len(primes)):
+           total = int(primes[i])
+           counter = 0
+           
+           for k in range(i+1, len(primes)):
+               total += int(primes[k])
+               counter += 1
+               if isPrime(total):
+                  if total > highest and counter > longest_counter and total < 1000000:
+                     highest = total
+                     longest_counter = counter
+                  elif total >= 1000000:
+                      break
+
+       print highest
        
    def problem_13(self):
        f = open('problem_23.txt', 'r')                         # Open file
@@ -375,7 +396,26 @@ class Problem(object):
                final += m
                
        print final
-                   
+       
+   def problem_8(self):
+       total = 0
+       product = 1
+       number = ""
+       f = open('problem_8.txt', 'r') 
+       for i in f:
+           number += i.strip()
+           
+       for k in range(0, 986):
+           for l in range(0, 13):
+               product *= int(number[k+l])
+
+           if product > total:
+               total = product
+           
+           product = 1
+           
+       print total
+           
    def problem_26(self):
        longest_recurring = 0
        for i in range(2,1000):
@@ -467,7 +507,7 @@ class Problem(object):
                    if sorted(str(prime_list[j])) == sorted(str(prime_list[k])) == sorted(str(prime_list[k] + difference)): # Now that we found an incremental pattern, verify if numbers are identical
                        print str(prime_list[j]) + str(prime_list[k]) + str(prime_list[k] + difference)     # Concatenate all three values and print it
                        
-   def problem_15(self):
+   def problem_15(self,show):
        """ PROGRAMMING APPROACH USING CONCEPT OF PASCAL TRIANGLE """
        def pascal(n, show = True):
            global r1
@@ -486,7 +526,7 @@ class Problem(object):
            pascal(squares*2, show)
            print r1[squares]
        
-       grid_combinations(20, show = False)
+       grid_combinations(20, show)
        
        """ ONE LINER USING STATISTICAL APPROACH """
        print factorial(40) / (factorial(20)**2)
@@ -550,8 +590,6 @@ class Problem(object):
                        break
        print prod
            
-           
-           
    def problem_43(self):
        total = 0
        perms = (list(permutations([0,1,2,3,4,5,6,7,8,9], 10)))
@@ -582,23 +620,16 @@ class Problem(object):
        print sum
        
    def problem_44(self):
-       dif = 10000
-       def pentagon(numbers):
-           pent_list = []
-           for i in range(1, numbers+1):
-               pent_list.append(i * (3*i -1) / 2)
-           return pent_list
-           
-       pent_list = pentagon(10000)
-       for i in range(3, len(pent_list)):
-           for difference in range(0, i):
-               if pent_list[i] - pent_list[difference] in pent_list:
-                   if pent_list[i] + pent_list[difference] in pent_list:
-                       dif = pent_list[i] - pent_list[difference]
-                       if dif < smallest_dif:
-                           smallest_dif = dif
-           
-       print smallest_dif
+      def pentagonal(n):
+          return n * (3 * n - 1) / 2
+
+      pentagonals = set(pentagonal(n) for n in range(1, 3000))
+      c = combinations(pentagonals, 2)
+      for p in c:
+          if p[0]+p[1] in pentagonals and abs(p[0]-p[1]) in pentagonals:
+              print abs(p[0]-p[1])
+              break
+          
        
    def problem_37(self):
        primes = primesfrom2to(1000000)
@@ -650,7 +681,7 @@ class Problem(object):
        for x in range(1,100):
            for y in xrange(x, 101):
                NUMBERS[y] += NUMBERS[y-x]
-       print NUMBERS[5]
+       print NUMBERS[100]
        
        
    # def problem_54(self):
@@ -776,10 +807,108 @@ class Problem(object):
        print decryption
        print total
        
+   def problem_35(self):
+       circular = 13
+       prime_rotate = True
+       def rotate(strg,n):
+           return strg[n:] + strg[:n]
+           
+       primes = primesfrom2to(1000000)
+       
+       for k in range(25, len(primes)):
+           for l in range(1, len(str(primes[k])) +1):
+               if not isPrime(int(rotate(str(primes[k]), l))):
+                  prime_rotate = False
+                  break
+
+           if prime_rotate == True:
+               circular += 1
+          
+           prime_rotate = True
+       print circular
+       
+   def problem_11(self):
+       text = []
+       largest = 0
+       f = open('problem_11.txt', 'r')
+       for i in range(1,21):
+           text.append(f.readline().strip().split(" "))
+       
+       for row in range(0, 20):
+           for column in range(0,20):
+              
+              if column < 17:
+                 total = int(text[row][column]) * int(text[row][column+1]) * int(text[row][column+2]) * int(text[row][column+3])
+                 if total > largest:
+                     largest = total
+              
+              if row < 17:
+                  total = int(text[row][column]) * int(text[row+1][column]) *int(text[row+2][column]) * int(text[row+3][column])
+                  if total > largest:
+                     largest = total
+              
+              if column < 17 and row < 17:
+                  total = int(text[row][column]) * int(text[row+1][column+1]) * int(text[row+2][column+2]) * int(text[row+3][column+3])
+                  if total > largest:
+                     largest = total
+                     
+              if row > 2 and column < 17:
+                  total = int(text[row][column]) * int(text[row-1][column+1]) * int(text[row-2][column+2]) * int(text[row-3][column+3])
+                  if total > largest:
+                      largest = total
+        
+       print largest
+       
+   def problem_32(self):
+        products = []
+        for i in xrange(2,10000):
+            for j in xrange(1,1000000000):
+               if len(str(i) + str(j) + str(i*j)) > 9:
+                  break
                
-            
+               elif len(str(i) + str(j) + str(i*j)) == 9:
+                  if "".join(sorted(str(i) + str(j) + str(i*j))) == '123456789':
+                     if i*j not in products:
+                         products.append(i*j)
+                         
+        print sum(products)
+                  
+   def problem_38(self):
+        largest = 0
+        for i in xrange(1, 10000):
+           pan = str(i)
+           multiple = 2
+           while len(pan) < 9:
+               pan += str(i*multiple)
+               multiple += 1
+          
+           if len(pan) == 9 and "".join(sorted(pan)) == '123456789' and largest < pan:
+              largest = pan
+              
+        print largest
+        
+   def problem_40(self):
+       fraction = "1"
+       for i in range(1,1000000):
+           fraction += str(i)
+       
+       print int(fraction[1]) * int(fraction[10]) * int(fraction[100]) * int(fraction[1000]) * int(fraction[10000]) * int(fraction[100000]) * int(fraction[1000000])
+   
+   def problem_63(self):
+       total = 1
+       for i in range(2,10):
+           power = 1
+           while power <= len(str(i ** power)):
+               if len(str(i**power)) == power:
+                  total += 1
+               power += 1
+               
+       print total
+                  
+               
+       
 if __name__ == '__main__':   
    start_time = time.time()
    problem_class = Problem()
-   problem_class.problem_52()
+   problem_class.problem_57()
    print (time.time() - start_time), "Seconds"
