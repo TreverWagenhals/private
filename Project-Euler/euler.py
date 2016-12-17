@@ -905,10 +905,31 @@ class Problem(object):
                
        print total
                   
+   def problem_85(self):
+       row = 2
+       difference = 2000000
+       while True:
+           column = 3
+           total = 0
+           while total < 18:
+               for row_size in range(1, row + 1):
+                  for col_size in range(1, column + 1):
+                      if row_size == 1 and col_size == 1:
+                         total += row * column
+                      elif row_size == 1 and col_size != 1 and col_size != column:
+                         total += row * (column - 1)
+                      elif row_size != 1 and row_size != row and col_size == 1:
+                         total += column * (row - 1)
+                      elif row_size == row and col_size == column:
+                         total += 1
+                         
+               print total
+               column += 1
+           row += 1
                
        
 if __name__ == '__main__':   
    start_time = time.time()
    problem_class = Problem()
-   problem_class.problem_57()
+   problem_class.problem_85()
    print (time.time() - start_time), "Seconds"
