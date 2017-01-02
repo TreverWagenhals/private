@@ -1,0 +1,2 @@
+net clk_i 			loc=A9;
+net blinker_o	 	loc=T7;
