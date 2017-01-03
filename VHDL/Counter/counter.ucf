@@ -1,0 +1,6 @@
+net clk_i		loc=A9;
+net led1_o		loc=B15;
+net led2_o		loc=B16;
+net led3_o		loc=C15;
+net led4_o		loc=C16;
+net led5_o		loc=T7;
