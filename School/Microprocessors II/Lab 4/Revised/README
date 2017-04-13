@@ -1,0 +1,1 @@
+After learning better programming format, I have gone back and redesigned the structure of this program for better readability. Since I do not have the PIC, Galileo Board, or a Linux enviornment to verify that this code works exactly the same, it has been untested. No major changes have been made though, so it should still be able to be compiled.
