@@ -85,8 +85,8 @@ unsigned int time_delay;
 /* since they are already saved as variables elsewhere   */
 /*********************************************************/
 const char* hostname = "http://ec2-54-152-121-129.compute-1.amazonaws.com";
-const int port = 8080;
-const int ID = 6;
+const unsigned int port = 8080;
+const unsigned int ID = 6;
 const char* password = "4GRAmJY4IN";
 const char* name = "Team+Steel+Elephants";
 
@@ -100,19 +100,19 @@ char* days[] = {"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Fri
 char* months[] = {"", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 unsigned char buf[10] = {0};
 int userinput;
-int USER_INPUT = false;
+bool USER_INPUT = false;
 char buffer[1024];  
 char status[40];
 
 /***************************************************************************************/
 /* Global Variables for ensuring that the multiple threads experience mutual exclusion */
 /***************************************************************************************/
-int UI_THREAD_RUNNING = true;
-int PIC_THREAD_RUNNING = false;
-int SERVER_THREAD_RUNNING = false;
-int STANDBY_THREAD_RUNNING = false;
-int ACTIVATE_STANDBY_THREAD = false;
-int ACTIVATE_DUAL_WAY_COMMUNICATION = false;
+bool UI_THREAD_RUNNING = true;
+bool PIC_THREAD_RUNNING = false;
+bool SERVER_THREAD_RUNNING = false;
+bool STANDBY_THREAD_RUNNING = false;
+bool ACTIVATE_STANDBY_THREAD = false;
+bool ACTIVATE_DUAL_WAY_COMMUNICATION = false;
 int user_chosen_standby_time;
 char dual_communication[10] = "enable";
 char standby_communication[10] = "enable";
@@ -202,12 +202,12 @@ void assignFileHandleOutput()
 /********************************************/
 /* CLOSE ALL GPIOS WHEN EXITING THE PROGRAM */
 /********************************************/
-int closeGPIO(int gpio, int fileHandle)
+void closeGPIO(int gpio, int fileHandle)
 {
     char buffer[256];
     close(fileHandle); //This is the file handle of opened GPIO for Read / Write earlier.
     fileHandle = open("/sys/class/gpio/unexport", O_WRONLY);
-    if(ERROR == fileHandle)
+    if(fileHandle == ERROR)
     {
         puts("Unable to open file to shut off GPIO pin:");
         puts(buffer);
@@ -216,20 +216,16 @@ int closeGPIO(int gpio, int fileHandle)
     sprintf(buffer, "%d", gpio);
     write(fileHandle, buffer, strlen(buffer));
     close(fileHandle);
-    return(0);
 }
 
 /*******************************************************/
 /* GENERIC CHECK TO VERIFY THAT THE GPIO FILES WERE    */
 /* OPENED PROPERLY FOR DIRECTION STORING               */
 /*******************************************************/
-int errorCheckFileHandle(int fileHandle)
+void errorCheckFileHandle(int fileHandle)
 {
-	if(ERROR ==  fileHandle)
-    {
+	if(ERROR == fileHandle)
    		printf("Unable to open GPIO pin to set the direction properly. \n");
-   		return(-1);
-    }
 }
 
 /************************************************************/
@@ -244,15 +240,10 @@ int readGPIO(int fileHandle, int gpio)
         read(fileHandle, &value, 1);
 
         if('0' == value)
-        {
-            // Current GPIO status low
 		    value = 0;
-        }
         else
-        {
-            // Current GPIO status high
 		    value = 1;
-        }
+		
         close(fileHandle);
         return value;
 }
@@ -302,11 +293,13 @@ int openGPIO(int gpio, int direction )
 		
     //Export GPIO
     fileHandle = open("/sys/class/gpio/export", O_WRONLY);
-    if(ERROR == fileHandle)
+	
+    if(fileHandle == ERROR)
     {
         puts("Error: Unable to open /sys/class/gpio/export");
         return(-1);
     }
+	
     sprintf(buffer, "%d", gpio);
     write(fileHandle, buffer, strlen(buffer));
     close(fileHandle);
@@ -314,9 +307,9 @@ int openGPIO(int gpio, int direction )
     //Direction GPIO
     sprintf(buffer, "/sys/class/gpio/gpio%d/direction", gpio);
     fileHandle = open(buffer, O_WRONLY);
-    if(ERROR == fileHandle)
+    if(fileHandle == ERROR)
     {
-        puts("Unable to open file:");
+        puts("Unable to open file: ");
         puts(buffer);
         return(-1);
     }
@@ -336,12 +329,10 @@ int openGPIO(int gpio, int direction )
     //Open GPIO for Read / Write
     sprintf(buffer, "/sys/class/gpio/gpio%d/value", gpio);
     fileHandle = open(buffer, fileMode);
-    if(ERROR == fileHandle)
+    if(fileHandle == ERROR)
     {
-        puts("Unable to open file:");
-
+        puts("Unable to open file: ");
         puts(buffer);
-
         return(-1);
     }
     return(fileHandle);  //This file handle will be used in read/write and close operations.
@@ -351,20 +342,13 @@ int openGPIO(int gpio, int direction )
 /* WHILE GPIO PINS ARE SET AS OUTPUT, ALLOWS YOU TO DEFINE */
 /* WHETHER YOU WANT THE OUTPUT TO BE 1 OR 0                */
 /***********************************************************/
-int writeGPIO(int fHandle, int val)
+void writeGPIO(int fHandle, int val)
 {
 	lseek(fHandle, 0, SEEK_SET);
-        if(val ==  0)
-        {
-		    // Set GPIO low status
-		    write(fHandle, "0", 1);
-        }
-        else
-        {
-		    // Set GPIO high status
-		    write(fHandle, "1", 1);
-        }
-        return(0);
+    if(val == 0)
+	    write(fHandle, "0", 1);
+    else
+	    write(fHandle, "1", 1);
 }
 
 /************************************/
@@ -422,11 +406,9 @@ void writeReceiveADC()
 	assignFileHandleOutput();	
 
 	int reload;
-	ADC_FULL = ADC[9]
+	ADC_FULL = ADC[9];
 	for (reload = 8; reload >= 0; reload--)
-	{ 
 		ADC_FULL = (ADC_FULL << 1) + ADC[reload];
-	}
 }
 
 /******************************************/
@@ -488,15 +470,11 @@ void openI2C()
 
 	char *filename = "/dev/i2c-0";
 	if((file = open(filename, O_RDWR)) < 0)
-	{
 		printf("Failed to open the i2c bus");
-	}
 
 	int addr = 0x68;          						// I2C Address of DS1307
 	if (ioctl(file, I2C_SLAVE, addr) < 0) 
-	{
     	printf("Failed to acquire bus access and/or talk to slave.\n");
-	}
 }
 
 /*****************************************/
@@ -507,19 +485,13 @@ void read_the_clock(int DS1307_REGISTER)
 {                                                                       
     buf[0] = DS1307_REGISTER;        										// Register you want to point at                                                          
 
-	if(write(file, buf, 1) != 1)                              	            // Point at proper register with write command
-	{                                                                         
-   		 printf("Failed to write to the i2c bus.\n");                  
-	}                                                           
+	if(write(file, buf, 1) != 1)                              	            // Point at proper register with write command       
+   		printf("Failed to write to the i2c bus.\n");                  
 	
-	if(read(file, buf, 1) != 1)  											// Now read the register we pointed to                                              
-	{                                                                                                                                                                                                
-    		printf("Failed to read from the i2c bus.\n");            
-	}                                                                                                                                                                                                                                                
+	if(read(file, buf, 1) != 1)  											// Now read the register we pointed to                                                                                                                                                                                                                                              
+    	printf("Failed to read from the i2c bus.\n");                                                                                                                                                                                                                                                         
 	else
-	{
-		temp_read[DS1307_REGISTER] = ((buf[0]/16*10) + (buf[0]%16));		// Save buf value to array and convert it from BCD to decimal
-	}                                                                                                                                                                                                                            
+		temp_read[DS1307_REGISTER] = ((buf[0]/16*10) + (buf[0]%16));		// Save buf value to array and convert it from BCD to decimal                                                                                                                                                                                                                           
 }   
 
 /****************************************/
@@ -528,16 +500,14 @@ void read_the_clock(int DS1307_REGISTER)
 /****************************************/
 void read_the_time()
 {
-		int i;
-		for (i = 0; i < 7; i++)
-		{
-			read_the_clock(i);
-		}
+	int i;
+	for (i = 0; i < 7; i++)
+		read_the_clock(i);
 
-		printf("\n%s, %s %i 20%i, %02i:%02i:%02i \n", days[temp_read[DAY_OF_WEEK]], months[temp_read[MONTH]], temp_read[DAY_OF_MONTH], temp_read[YEAR], temp_read[HOURS], temp_read[MINUTES], temp_read[SECONDS]); 
-		char timestring[100];
-		snprintf(timestring, 100, "%s,+%s+%i+20%i,+%02i:%02i:%02i", days[temp_read[DAY_OF_WEEK]], months[temp_read[MONTH]], temp_read[DAY_OF_MONTH], temp_read[YEAR], temp_read[HOURS], temp_read[MINUTES], temp_read[SECONDS]);
-		snprintf(buffer, 1024, "%s:%i/update?id=%i&password=%s&name=%s&data=%i&timestamp=%s&status=%s", hostname, port, ID, password, name, ADC_FULL, timestring, status);
+	printf("\n%s, %s %i 20%i, %02i:%02i:%02i \n", days[temp_read[DAY_OF_WEEK]], months[temp_read[MONTH]], temp_read[DAY_OF_MONTH], temp_read[YEAR], temp_read[HOURS], temp_read[MINUTES], temp_read[SECONDS]); 
+	char timestring[100];
+	snprintf(timestring, 100, "%s,+%s+%i+20%i,+%02i:%02i:%02i", days[temp_read[DAY_OF_WEEK]], months[temp_read[MONTH]], temp_read[DAY_OF_MONTH], temp_read[YEAR], temp_read[HOURS], temp_read[MINUTES], temp_read[SECONDS]);
+	snprintf(buffer, 1024, "%s:%i/update?id=%i&password=%s&name=%s&data=%i&timestamp=%s&status=%s", hostname, port, ID, password, name, ADC_FULL, timestring, status);
 } 		
 
 /***********************/
@@ -545,23 +515,24 @@ void read_the_time()
 /***********************/
 void change_the_time()
 {
-		int accept;
-		int days_in_that_month;
-	
-		printf("You are now going to change the time. For simplicity, seconds will be left out and just set to 0, so pick the time based on the next possible minute: \n\n");
-				
-		do
-		{
+	int accept;
+	int days_in_that_month;
+
+	printf("You are now going to change the time. For simplicity, seconds will be left out and just set to 0, so pick the time based on the next possible minute: \n\n");
+			
+	do
+	{
 		printf("What year is it, from 0-99? (Note: just choose the year in the century ie. 16 would be 2016) \n");
 		scanf("%i", &change_time[YEAR]);
 	
 		if (change_time[YEAR] < 0 || change_time[YEAR] > 99)
 			printf("Error: Year should be from 0-99 \n");
-		}while (change_time[YEAR] < 0 || change_time[YEAR] > 99);
 		
+	} while (change_time[YEAR] < 0 || change_time[YEAR] > 99);
+	
 
-		do
-		{
+	do
+	{
 		printf("1  - January  2  - February  3 - March     \n");
 		printf("4  - April    5  - May       6 - June      \n");
 		printf("7  - July     8  - August    9 - September \n");
@@ -578,72 +549,70 @@ void change_the_time()
 			days_in_that_month = 28;
 		else
 			days_in_that_month = 31;																							// Rest have 31 days
-		} while (change_time[MONTH] < 1 || change_time[MONTH] > 12);
-		
-		
-		do
-		{
+	
+	} while (change_time[MONTH] < 1 || change_time[MONTH] > 12);
+	
+	do
+	{
 		printf("What day of the month is it? ");
 		printf("(Note: for the month of %s, ", months[change_time[MONTH]]);
 		printf("there are only %i days): ", days_in_that_month);
 		scanf("%i", &change_time[DAY_OF_MONTH]);
 		if (change_time[DAY_OF_MONTH] < 1 || change_time[DAY_OF_MONTH] > days_in_that_month)				// Makes sure the user knows how many days are in the month they picked
 			printf("Error: The month you chose cannot be represented with that date... try again! \n");
-		}
-		while (change_time[DAY_OF_MONTH] < 1 || change_time[DAY_OF_MONTH] > days_in_that_month);;
-		
-		do
-		{
+	
+	} while (change_time[DAY_OF_MONTH] < 1 || change_time[DAY_OF_MONTH] > days_in_that_month);;
+	
+	do
+	{
 		printf("1 - Sunday \n2 - Monday\n3 - Tuesday \n4- Wednesday\n5 - Thursday \n6 - Friday \n7- Saturday \n");
 		printf("What day of the week is it?: ");
 		scanf("%i", &change_time[DAY_OF_WEEK]);
 		if (change_time[DAY_OF_WEEK] < 1 || change_time[DAY_OF_WEEK] > 7)
 			printf("Error: the number you chose does not represent a day of the week");		
-		} while (change_time[DAY_OF_WEEK] < 1 || change_time[DAY_OF_WEEK] > 7);
-			
-
-		do
-		{
+	} while (change_time[DAY_OF_WEEK] < 1 || change_time[DAY_OF_WEEK] > 7);
+		
+	do
+	{
 		printf("What is the current hour? (Note: the hour system is set to 24-Mode, so choose the hour from 0-23): ");
 		scanf("%i", &change_time[HOURS]);
 		if (change_time[HOURS] < 0 || change_time[HOURS] > 23)
 			printf("Error: The number you chose cannot be represented by hours... try again! \n");
-
-		} while (change_time[HOURS] < 0 || change_time[HOURS] > 23);
-		
-		do
-		{
+	
+	} while (change_time[HOURS] < 0 || change_time[HOURS] > 23);
+	
+	do
+	{
 		printf("What minute is it? (Note: pick the next possible minute on the clock, ranging from 0-59): ");
 		scanf("%i", &change_time[MINUTES]);
 		if (change_time[MINUTES] < 0 || change_time[MINUTES] > 59)
 			printf("Error: The number you chose cannot be represented by minutes... try again! \n");
+	
+	} while (change_time[MINUTES] < 0 || change_time[MINUTES] > 59);
+			
+	printf("Is the time that you want to set the clock to %s, %s %i 20%i, %02i:%02i:00? \n", days[change_time[DAY_OF_WEEK]], months[change_time[MONTH]], change_time[DAY_OF_MONTH], change_time[6], change_time[HOURS], change_time[MINUTES]);
 
-		} while (change_time[MINUTES] < 0 || change_time[MINUTES] > 59);
-				
-		printf("Is the time that you want to set the clock to %s, %s %i 20%i, %02i:%02i:00? \n", days[change_time[DAY_OF_WEEK]], months[change_time[MONTH]], change_time[DAY_OF_MONTH], change_time[6], change_time[HOURS], change_time[MINUTES]);
-
-		do
-		{
+	do
+	{
 		printf("Press 1 to accept changes, and 2 to discard changes (NOTE: If you are accepting changes, wait until the time changes to the next minute to have the seconds accurate): ");
 		scanf("%i", &accept);
 
 		if (accept != 1 && accept != 2)
 			printf("Error: choose one of the options given \n");
-		} while (accept != 1 && accept != 2);
+	
+	} while (accept != 1 && accept != 2);
 
-		if (accept == 1)
-		{	
-			int j;
-			for (j = 0; j < 7; j++)
-			{
-				buf[j+1] = ((change_time[j]/10*16) + (change_time[j]%10));				// Save the values the user chose to buf starting at the second value
-			}																			// since buf[0] is the array. Convert user's int choice to BCD
-
-			buf[0] = 0x00;
-			write(file, buf, 8);														// Writes the starting address, plus the 7 register values to the system
-		}
-		else
-			printf("Time change ABORTED \n");
+	if (accept == 1)
+	{	
+		int j;
+		for (j = 0; j < 7; j++)														// Save the values the user chose to buf starting at the second value
+			buf[j+1] = ((change_time[j]/10*16) + (change_time[j]%10));				// since buf[0] is the array. Convert user's int choice to BCD
+			
+		buf[0] = 0x00;
+		write(file, buf, 8);														// Writes the starting address, plus the 7 register values to the system
+	}
+	else
+		printf("Time change ABORTED \n");
 }
 
 /**********************************************/
@@ -671,50 +640,51 @@ void HTTP_GET(const char* url)
 				fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(request));
 			else
 			{
-			if(strstr(s.ptr, SERVER_MSG_GET) != NULL)	
-			{
-				strncpy(delay_time, &s.ptr[326], 1);
-				delay_time[1]  = '\0';
-				time_delay = atoi(delay_time);
-				if (USER_INPUT == true)
+				if(strstr(s.ptr, SERVER_MSG_GET) != NULL)	
 				{
-					printf("\nThe server has sent a request to do a MSG_GET command in %i seconds!\n", time_delay);
-					sleep(time_delay);
+					strncpy(delay_time, &s.ptr[326], 1);
+					delay_time[1]  = '\0';
+					time_delay = atoi(delay_time);
+					if (USER_INPUT == true)
+					{
+						printf("\nThe server has sent a request to do a MSG_GET command in %i seconds!\n", time_delay);
+						sleep(time_delay);
+					}
+					userinput = 2;
 				}
-				userinput = 2;
-			}
-			else if (strstr(s.ptr, SERVER_MSG_PING) != NULL)
-			{
-				strncpy(delay_time, &s.ptr[327], 1);
-				delay_time[1] = '\0';
-				time_delay = atoi(delay_time);
-				if (USER_INPUT == true)
+				else if (strstr(s.ptr, SERVER_MSG_PING) != NULL)
 				{
-					printf("\nThe server has sent a request to do a MSG_PING command in %i seconds!\n", time_delay);
-					sleep(time_delay);
+					strncpy(delay_time, &s.ptr[327], 1);
+					delay_time[1] = '\0';
+					time_delay = atoi(delay_time);
+					if (USER_INPUT == true)
+					{
+						printf("\nThe server has sent a request to do a MSG_PING command in %i seconds!\n", time_delay);
+						sleep(time_delay);
+					}
+					userinput = 1;
 				}
-				userinput = 1;
-			}
-			else
-			{
-				strncpy(delay_time, &s.ptr[328], 1);
-				delay_time[1] = '\0';
-				time_delay = atoi(delay_time);
-				if (USER_INPUT == true)
+				else
 				{
-					printf("\nThe server has sent a request to do a MSG_RESET command in %i seconds!\n", time_delay);
-					sleep(time_delay);
+					strncpy(delay_time, &s.ptr[328], 1);
+					delay_time[1] = '\0';
+					time_delay = atoi(delay_time);
+					if (USER_INPUT == true)
+					{
+						printf("\nThe server has sent a request to do a MSG_RESET command in %i seconds!\n", time_delay);
+						sleep(time_delay);
+					}
+					userinput = 0;
 				}
-				userinput = 0;
-			}
-			free(s.ptr);
+				
+				free(s.ptr);
 			}
 		}
 		else
 		{
-		request = curl_easy_perform(curl);
-		if(request != CURLE_OK)
-			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(request));
+			request = curl_easy_perform(curl);
+			if(request != CURLE_OK)
+				fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(request));
 		}
 		USER_INPUT = false;		
 		curl_easy_cleanup(curl);
@@ -726,7 +696,6 @@ void HTTP_GET(const char* url)
 /*****************************************/
 void *Switch_statement(void *arg)
 {
-
 	while(1)
 	{
 		pthread_mutex_lock(&lock);
@@ -736,70 +705,71 @@ void *Switch_statement(void *arg)
 		switch(userinput) 
 		{
 			case MSG_PING: 		
-					writePingToGPIO(); 						//WRITES THE CORRECT VALUES TO EACH GPIO PIN FOR PING CASE
-					closeAll();
-					assignFileHandleInput();
-					acknowledge();
-					closeAll();
-					assignFileHandleOutput();
-					break;
-			case MSG_GET: 									//RETRIEVE ADC CASE
-					writeReceiveADC();//WRITES THE CORRECT VALUES TO EACH GPIO PIN FOR RECEIVE ADC CASE (INCLUDES CHANGING GPIO PINS TO INPUT)
-					read_the_time();
-					printf("The decimal value of ADC is %u \n", ADC_FULL);
-					printf("The binary value of ADC is %u%u%u%u%u%u%u%u%u%u \n", ADC[9], ADC[8], ADC[7], ADC[6], ADC[5], ADC[4], ADC[3], ADC[2], ADC[1], ADC[0]);
-					printf("The hexadecimal value of ADC is %X \n", ADC_FULL);	
-					break;
+				writePingToGPIO(); //WRITES THE CORRECT VALUES TO EACH GPIO PIN FOR PING CASE
+				closeAll();
+				assignFileHandleInput();
+				acknowledge();
+				closeAll();
+				assignFileHandleOutput();
+				break;
+			case MSG_GET: 		   //RETRIEVE ADC CASE
+				writeReceiveADC(); //WRITES THE CORRECT VALUES TO EACH GPIO PIN FOR RECEIVE ADC CASE (INCLUDES CHANGING GPIO PINS TO INPUT)
+				read_the_time();
+				printf("The decimal value of ADC is %u \n", ADC_FULL);
+				printf("The binary value of ADC is %u%u%u%u%u%u%u%u%u%u \n", ADC[9], ADC[8], ADC[7], ADC[6], ADC[5], ADC[4], ADC[3], ADC[2], ADC[1], ADC[0]);
+				printf("The hexadecimal value of ADC is %X \n", ADC_FULL);	
+				break;
 			case CLOSE_PROGRAM:
-					closeAll();
-					closeStrobe();
-					exit(0);	
-			case MSG_RESET: 									//RESET CASE
-					writeResetToGPIO(); 					//WRITES THE CORRECT VALUES TO EACH GPIO PIN FOR RESET CASE
-					closeAll();
-					assignFileHandleInput();
-					acknowledge();
-					closeAll();
-					assignFileHandleOutput();
-					break;							//EXIT THE PROGRAM
+				closeAll();
+				closeStrobe();
+				exit(0);	
+			case MSG_RESET: 									
+				writeResetToGPIO(); //WRITES THE CORRECT VALUES TO EACH GPIO PIN FOR RESET CASE
+				closeAll();
+				assignFileHandleInput();
+				acknowledge();
+				closeAll();
+				assignFileHandleOutput();
+				break;
 			case CHANGE_CLOCK:
-					change_the_time();
-					break;
+				change_the_time();
+				break;
 			case STANDBY:
-					if (ACTIVATE_STANDBY_THREAD == false)
+				if (ACTIVATE_STANDBY_THREAD == false)
+				{
+					ACTIVATE_STANDBY_THREAD = true;
+					do
 					{
-						ACTIVATE_STANDBY_THREAD = true;
-						do
-						{
-							printf("Enter how often the standby thread should send data to the server in seconds: \n");
-							scanf("%i", &user_chosen_standby_time);
-							if (user_chosen_standby_time < 0)
-								printf("Seconds cannot be negative! \n");
+						printf("Enter how often the standby thread should send data to the server in seconds: \n");
+						scanf("%i", &user_chosen_standby_time);
+						if (user_chosen_standby_time < 0)
+							printf("Seconds cannot be negative! \n");
 
 						strcpy(standby_communication, "disable");
-						} while (user_chosen_standby_time < 0);
-					}
-					else 
-					{
-						ACTIVATE_STANDBY_THREAD = false;
-						strcpy(standby_communication, "enable");
-					}
-					break;
+					} while (user_chosen_standby_time < 0);
+				}
+				else 
+				{
+					ACTIVATE_STANDBY_THREAD = false;
+					strcpy(standby_communication, "enable");
+				}
+				break;
 			case DUAL_WAY:
-					if (ACTIVATE_DUAL_WAY_COMMUNICATION == false)
-					{
-						ACTIVATE_DUAL_WAY_COMMUNICATION = true;
-						strcpy(dual_communication, "disable");
-					}
-					else
-					{
-						ACTIVATE_DUAL_WAY_COMMUNICATION = false;
-						strcpy(dual_communication, "enable");
-					}
-					break;
+				if (ACTIVATE_DUAL_WAY_COMMUNICATION == false)
+				{
+					ACTIVATE_DUAL_WAY_COMMUNICATION = true;
+					strcpy(dual_communication, "disable");
+				}
+				else
+				{
+					ACTIVATE_DUAL_WAY_COMMUNICATION = false;
+					strcpy(dual_communication, "enable");
+				}
+				break;
 			default:
-					printf("Your entry is not a valid option! Try again \n");					
+				printf("Your entry is not a valid option! Try again \n");					
 		}
+		
 		PIC_THREAD_RUNNING = false;
 		if (userinput == MSG_GET)
 		{	
@@ -876,10 +846,8 @@ void *Standby_counter(void *arg)
 	while(1)
 	{
 		int standby_time;
-		while (!(UI_THREAD_RUNNING && ACTIVATE_STANDBY_THREAD))
-		{
+		while (!(UI_THREAD_RUNNING && ACTIVATE_STANDBY_THREAD))	
 			standby_time = 0;
-		}
 
 		if (standby_time == user_chosen_standby_time)
 		{
@@ -922,7 +890,9 @@ void init_string(struct string *s)
 {
   s->len = 0;
   s->ptr = malloc(s->len+1);
-  if (s->ptr == NULL) {
+  
+  if (s->ptr == NULL) 
+  {
     fprintf(stderr, "malloc() failed\n");
     exit(EXIT_FAILURE);
   }
