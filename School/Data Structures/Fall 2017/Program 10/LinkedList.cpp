@@ -1,4 +1,4 @@
-#include "LinkedList_T.h"
+#include "LinkedList.h"
 
 // move the current node in the list forward one node
 void List::Skip()

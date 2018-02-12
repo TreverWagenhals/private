@@ -1,5 +1,5 @@
 // TREVER WAGENHALS
-// PROGRAM 8  
+// PROGRAM 10
 
 #ifndef BST_T_H
 #define BST_T_H										
@@ -10,7 +10,6 @@
 using namespace std;
 
 #include "CursorCntl.h"
-#include "Queue_T.h"
 
 template <typename NodeData>
 class BST
@@ -46,7 +45,7 @@ public:
 
    // Delete the current node.
    void Delete();
-   
+   NodeData RemoveLeaf() { return RRemoveLeaf(root); }
    // Output the tree to the "os" in the indicated sequence.
    void OutputInOrder(ostream &os) const;    // Output inorder
    void OutputPreOrder(ostream &os) const;   // Output preorder
@@ -64,8 +63,6 @@ public:
    
    
    
-   
-   
 private:
    Node *root;      // Points to the root node
    Node *current;   // Points to the current node
@@ -74,6 +71,7 @@ private:
    // Recursive Search
    bool RSearch(Node *subTree, NodeData &d);
 
+   NodeData RRemoveLeaf(Node *&r);
    // Recursive Insert
    void RInsert(Node *&subTree, NodeData &d);
 
@@ -88,6 +86,31 @@ private:
    void RShowTree(Node *subTree, int x, int y) const;
 };
 
+template <typename NodeData>
+NodeData BST<NodeData>::RRemoveLeaf(Node *&r)
+{
+	// Make sure that the tree is not empty.
+	assert(r != 0);
+	// Does this node have any successors?
+	if (r->left != 0)
+		// There is a left successor, traverse left subtree
+		return RRemoveLeaf(r->left);
+	else if (r->right != 0)
+		// There is a right successor, traverse right subtree
+		return RRemoveLeaf(r->right);
+	else
+	{
+		// There are no successors; it's a leaf node, capture node data
+		NodeData result = r->data;
+		// Delete the leaf node
+		delete r;
+		// Mark the subtree empty
+		r = 0;
+		// Return the data from the removed node.
+		return result;
+	}
+}
+
 // Public insert function to call RInsert
 template <typename NodeData>
 void BST<NodeData>::Insert(NodeData &d)
@@ -101,6 +124,9 @@ void BST<NodeData>::OutputInOrder(ostream &os) const
 {
 	ROutputInOrder(root, os);
 }
+
+
+
 
 // Public OutputPreOrder function to call ROutputPreOrder
 template <typename NodeData>
@@ -124,6 +150,42 @@ bool BST<NodeData>::Search(NodeData &d)
 	return RSearch(root, d);
 }
 
+template <typename NodeData>
+void BST<NodeData>::ROutputPostOrder(Node *subTree, ostream &os) const
+{
+	if (subTree != NULL)
+	{
+		ROutputPostOrder(subTree->left, os);
+		ROutputPostOrder(subTree->right, os);
+		subTree->data.Show(os);
+		cout << endl;
+	}
+}
+
+const unsigned XRoot = 40;        // Column number for root node
+
+template <typename NodeData>
+void BST<NodeData>::RShowTree(Node *subTree, int x, int y) const
+{
+  const unsigned VertSpacing = 7;   // Vertical spacing constant
+  const unsigned HorizSpacing = 10; // Horizontal spacing of tree nodes
+  const unsigned MaxLevels = 4;     // The number of levels that fit on the screen
+
+  // If the tree is not empty display it.
+  if (subTree != 0 && x < MaxLevels)
+    {
+    // Show the left sub-tree.
+    RShowTree(subTree->left, x+1, y+VertSpacing/(1<<x));
+
+    // Show the root.
+    gotoxy(XRoot+HorizSpacing*x, y);
+	subTree->data.Show(cout);
+	cout << endl;
+
+    // Show the right subtree.
+    RShowTree(subTree->right, x+1, y-VertSpacing/(1<<x));
+    }
+}
 
 
 
@@ -181,17 +243,17 @@ void BST<NodeData>::Delete()
 	delete temp; // free memory
 }
 
-template <typename NodeData>
-void BST<NodeData>::ROutputPostOrder(Node *subTree, ostream &os) const
-{
-	if (subTree != NULL)
-	{
-		ROutputPostOrder(subTree->left, os);
-		ROutputPostOrder(subTree->right, os);
-		subTree->data.Show(os);
-		cout << endl;
-	}
-}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -216,47 +278,6 @@ typename BST<NodeData>::Node* BST<NodeData>::ParentOfLeftMostRightSucc(Node *nod
 	}
 	return parent;
 }
-
-const unsigned XRoot = 40;        // Column number for root node
-
-template <typename NodeData>
-void BST<NodeData>::RShowTree(Node *subTree, int x, int y) const
-{
-  const unsigned VertSpacing = 7;   // Vertical spacing constant
-  const unsigned HorizSpacing = 10; // Horizontal spacing of tree nodes
-  const unsigned MaxLevels = 8;     // The number of levels that fit on the screen
-
-  // If the tree is not empty display it.
-  if (subTree != 0 && x < MaxLevels)
-    {
-    // Show the left sub-tree.
-    RShowTree(subTree->left, x+1, y+VertSpacing/(1<<x));
-
-    // Show the root.
-    gotoxy(XRoot+HorizSpacing*x, y);
-	subTree->data.Show(cout);
-	cout << endl;
-
-    // Show the right subtree.
-    RShowTree(subTree->right, x+1, y-VertSpacing/(1<<x));
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 template <typename NodeData>
 void BST<NodeData>::ShowTree() const
@@ -290,28 +311,7 @@ void BST<NodeData>::ShowTree() const
   gotoxy(xOld,yOld);      
 }
 
-// Output tree nodes level by level
-template <typename NodeData>
-void BST<NodeData>::OutputByLevel(ostream &os) const
-{
-	// Queue a queue of nodes
-	Queue<Node *> queue;
-	// Add root to start of queue
-	queue.Enqueue(root);
-	while (!queue.Empty())
-	{
-		// Add left and right successors of head node
-		if (queue.Head()->left != 0)
-			queue.Enqueue(queue.Head()->left);
-		if(queue.Head()->right != 0)
-			queue.Enqueue(queue.Head()->right);
-		// Show data for head node
-		queue.Head()->data.Show(os);
-		cout << endl;
-		// Remove head node
-		queue.Dequeue();
-	}
-}
+
 
 
 
