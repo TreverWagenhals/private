@@ -1,0 +1,1 @@
+obj/program1.d obj/program1.o: src/program1.cpp 
