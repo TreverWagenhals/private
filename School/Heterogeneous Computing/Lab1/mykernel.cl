@@ -16,7 +16,8 @@ __kernel void simpleMultiplyAdd(
     float sum = 0.0f;
 
     // Calculate a single element of the dot product of inputA and inputB
-    for (int i=0; i<widthA; i++) {
+    for (int i=0; i<widthA; i++) 
+    {
         sum += inputA[row*widthA + i] * inputB[i*widthB + col];
     }
 
