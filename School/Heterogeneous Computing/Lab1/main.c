@@ -182,7 +182,7 @@ int main()
     clSetKernelArg(kernel, 4, sizeof(cl_int), (void *)&hB);
     clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&bufferA);
     clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&bufferB);
-    clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&bufferC);
+    clSetKernelArg(kernel, 7, sizeof(cl_mem), (void *)&bufferC);
 
     // Execute the kernel 
     size_t globalws[2]={wD, hD};
