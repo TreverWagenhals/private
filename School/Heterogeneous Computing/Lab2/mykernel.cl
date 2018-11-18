@@ -2,7 +2,7 @@ __kernel void simpleMultiplyAdd(int numIterations, __global float *outputPi, __l
 {
     // Get global ID for worker
     const uint gid = get_global_id(0);
-    const uint lid = get_logical_id(0);
+    const uint lid = get_local_id(0);
  
     float sum = 0.0f;
     

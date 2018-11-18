@@ -36,7 +36,7 @@ int main()
     size_t global_size;
     size_t local_size;
 
-    float result;
+    float *result;
     FILE *fp;
     char fileName[] = "./mykernel.cl";
     char *source_str;
@@ -151,12 +151,7 @@ int main()
     }
 
     /* Create buffers to hold the text characters and count */
-    cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(result), result, &ret);
-    if(ret < 0) 
-    {
-       perror("Couldn't create a buffer");
-       exit(1);
-    };
+    cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(result), result, NULL);
 
     int numIterations = 16;
     /* Create kernel argument */
