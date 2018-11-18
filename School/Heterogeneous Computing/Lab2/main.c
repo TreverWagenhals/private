@@ -33,8 +33,8 @@ int main()
     cl_kernel kernel = NULL;
 
     cl_uint num_comp_units;
-    int global_size;
-    int local_size;
+    cl_uint global_size;
+    cl_uint local_size;
 
     float *result;
     FILE *fp;
@@ -85,13 +85,13 @@ int main()
     printf("num_comp_units=%u\n", num_comp_units);
 
     #ifdef __APPLE__
-        clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), (size_t *)&local_size, NULL);
+        clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(local_size), &local_size, NULL);
     #endif
     /* local size reported Altera FPGA is incorrect */
     #ifdef AOCL
+        printf("Local size is static 16 for AOCL \n");
         local_size = 16;
     #endif
-    printf("local_size=%lu\n", local_size);
     global_size = num_comp_units * local_size;
     printf("global_size=%i, local_size=%i\n", global_size, local_size);
 
@@ -155,12 +155,12 @@ int main()
 
     int iterations = 16;
     int *numIterations = &iterations;
-    int *numWorkers = &global_size;
+    cl_uint *numWorkers = &global_size;
     /* Create kernel argument */
     ret = clSetKernelArg(kernel, 0, sizeof(int), &numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &result_buffer);
     ret |= clSetKernelArg(kernel, 2, sizeof(float), NULL);
-    ret |= clSetKernelArg(kernel, 3, sizeof(int), &numWorkers);
+    ret |= clSetKernelArg(kernel, 3, sizeof(numWorkers), &numWorkers);
     if(ret < 0) 
     {
        printf("Couldn't set a kernel argument");
@@ -168,7 +168,7 @@ int main()
     };
 
     /* Enqueue kernel */
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, (size_t *)&global_size, (size_t *)&local_size, 0, NULL, NULL);
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
     if(ret < 0) 
     {
        perror("Couldn't enqueue the kernel");

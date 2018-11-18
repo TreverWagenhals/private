@@ -1,4 +1,4 @@
-__kernel void calculatePi(int numIterations, __global float *outputPi, __local float* local_result, int numWorkers)
+__kernel void calculatePi(int numIterations, __global float *outputPi, __local float* local_result, uint numWorkers)
 {
     // Get global ID for worker
     const uint gid = get_global_id(0);
@@ -21,7 +21,7 @@ __kernel void calculatePi(int numIterations, __global float *outputPi, __local f
     if (get_local_id(0) == 0)
     {        
         outputPi = 0;
-        for (int i = 0; i < numWorkers; i++)
+        for (uint i = 0; i < numWorkers; i++)
         {
             *outputPi += local_result[i]; 
         }
