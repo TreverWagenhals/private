@@ -153,12 +153,14 @@ int main()
     /* Create buffers to hold the text characters and count */
     cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(result), result, NULL);
 
-    int numIterations = 16;
+    int iterations = 16;
+    int *numIterations = &iterations;
+    int *numWorkers = global_size;
     /* Create kernel argument */
-    ret = clSetKernelArg(kernel, 0, sizeof(int), numIterations);
+    ret = clSetKernelArg(kernel, 0, sizeof(int), &numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &result_buffer);
     ret |= clSetKernelArg(kernel, 2, sizeof(float), NULL);
-    ret |= clSetKernelArg(kernel, 3, sizeof(int), (int)global_size);
+    ret |= clSetKernelArg(kernel, 3, sizeof(int), &global_size);
     if(ret < 0) 
     {
        printf("Couldn't set a kernel argument");
