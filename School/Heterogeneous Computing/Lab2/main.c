@@ -141,6 +141,10 @@ int main()
       printf("Failed to build program.\n");
       exit(1);
     }
+    else
+    {
+        printf("Program built \n");
+    }
 
     /* Create OpenCL Kernel */
     kernel = clCreateKernel(program, "calculatePi", &ret);
@@ -148,6 +152,9 @@ int main()
     {
       printf("Failed to create kernel.\n");
       exit(1);
+    }
+    {
+        printf("Kernel created \n");
     }
 
     /* Create buffers to hold the text characters and count */
@@ -166,6 +173,9 @@ int main()
        printf("Couldn't set a kernel argument");
        exit(1);
     };
+    {
+        printf("Kernel arguments set");
+    }
 
     /* Enqueue kernel */
     ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
@@ -175,6 +185,9 @@ int main()
        printf("Error code: %d\n", ret);
        exit(1);
     }
+    {
+        printf("Kernel was enqueued \n");
+    }
 
     /* Read and print the result */
     ret = clEnqueueReadBuffer(command_queue, result_buffer, CL_TRUE, 0, sizeof(result), &result, 0, NULL, NULL);
@@ -182,6 +195,9 @@ int main()
     {
        perror("Couldn't read the buffer");
        exit(1);
+    }
+    {
+        printf("Buffer read back");
     }
     
     printf("Final calculated value: %f \n", result);
