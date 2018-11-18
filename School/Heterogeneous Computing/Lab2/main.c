@@ -155,12 +155,12 @@ int main()
 
     int iterations = 16;
     int *numIterations = &iterations;
-    int *numWorkers = global_size;
+    size_t *numWorkers = &global_size;
     /* Create kernel argument */
     ret = clSetKernelArg(kernel, 0, sizeof(int), &numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &result_buffer);
     ret |= clSetKernelArg(kernel, 2, sizeof(float), NULL);
-    ret |= clSetKernelArg(kernel, 3, sizeof(int), &global_size);
+    ret |= clSetKernelArg(kernel, 3, sizeof(size_t), &numWorkers);
     if(ret < 0) 
     {
        printf("Couldn't set a kernel argument");
