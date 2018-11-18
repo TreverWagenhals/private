@@ -1,4 +1,4 @@
-__kernel void simpleMultiplyAdd(int numIterations, __global float *outputPi, __local float* local_result, int numWorkers)
+__kernel void calculatePi(int numIterations, __global float *outputPi, __local float* local_result, int numWorkers)
 {
     // Get global ID for worker
     const uint gid = get_global_id(0);

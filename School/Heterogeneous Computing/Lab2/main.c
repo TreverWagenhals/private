@@ -85,7 +85,7 @@ int main()
     printf("num_comp_units=%u\n", num_comp_units);
 
     #ifdef __APPLE__
-        clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), (size_t)&local_size, NULL);
+        clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), (size_t *)&local_size, NULL);
     #endif
     /* local size reported Altera FPGA is incorrect */
     #ifdef AOCL
@@ -143,7 +143,7 @@ int main()
     }
 
     /* Create OpenCL Kernel */
-    kernel = clCreateKernel(program, "string_search", &ret);
+    kernel = clCreateKernel(program, "calculatePi", &ret);
     if (ret != CL_SUCCESS) 
     {
       printf("Failed to create kernel.\n");
@@ -168,7 +168,7 @@ int main()
     };
 
     /* Enqueue kernel */
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, (size_t)&global_size, (size_t)&local_size, 0, NULL, NULL);
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, (size_t *)&global_size, (size_t *)&local_size, 0, NULL, NULL);
     if(ret < 0) 
     {
        perror("Couldn't enqueue the kernel");
