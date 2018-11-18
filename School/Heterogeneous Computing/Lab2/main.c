@@ -158,10 +158,12 @@ int main()
        exit(1);
     };
 
+    int numIterations = 16;
     /* Create kernel argument */
-    ret = clSetKernelArg(kernel, 0, sizeof(global_size), global_size);
+    ret = clSetKernelArg(kernel, 0, sizeof(int), numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &result_buffer);
-    ret |= clSetKernelArg(kernel, 2, global_size * sizeof(float), NULL);
+    ret |= clSetKernelArg(kernel, 2, sizeof(float), NULL);
+    ret |= clSetKernelArg(kernel, 3, sizeof(int), (int)global_size);
     if(ret < 0) 
     {
        printf("Couldn't set a kernel argument");
@@ -184,6 +186,8 @@ int main()
        perror("Couldn't read the buffer");
        exit(1);
     }
+    
+    printf("Final calculated value: %f \n", result);
 
     clReleaseMemObject(result_buffer);
     clReleaseCommandQueue(command_queue);
