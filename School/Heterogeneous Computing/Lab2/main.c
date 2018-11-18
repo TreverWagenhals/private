@@ -38,7 +38,7 @@ int main()
 
     float result;
     FILE *fp;
-    char fileName[] = "./pi.cl";
+    char fileName[] = "./mykernel.cl";
     char *source_str;
     size_t source_size;
 
