@@ -189,6 +189,11 @@ int main()
         printf("Kernel was enqueued \n");
     }
 
+    if (clFinish(command_queue) != CL_SUCCESS)
+    {
+      perror("The kernel didn't finish correctly \n");
+    }
+    
     /* Read and print the result */
     ret = clEnqueueReadBuffer(command_queue, result_buffer, CL_TRUE, 0, sizeof(result), &result, 0, NULL, NULL);
     if(ret < 0) 
@@ -201,7 +206,7 @@ int main()
     }
     
     printf("Final calculated value: %f \n", result[0]);
-
+    
     clReleaseMemObject(result_buffer);
     clReleaseCommandQueue(command_queue);
     clReleaseKernel(kernel);
