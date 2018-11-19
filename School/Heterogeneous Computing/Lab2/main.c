@@ -166,7 +166,7 @@ int main()
     /* Create kernel argument */
     ret = clSetKernelArg(kernel, 0, sizeof(int), &numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &result_buffer);
-    ret |= clSetKernelArg(kernel, 2, sizeof(float), NULL);
+    ret |= clSetKernelArg(kernel, 2, numIterations*sizeof(float), NULL);
     ret |= clSetKernelArg(kernel, 3, sizeof(int), &numWorkers);
     if(ret < 0) 
     {
@@ -197,7 +197,7 @@ int main()
        exit(1);
     }
     {
-        printf("Buffer read back");
+        printf("Buffer read back \n");
     }
     
     printf("Final calculated value: %f \n", result[0]);
