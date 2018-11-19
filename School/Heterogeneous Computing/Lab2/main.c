@@ -93,7 +93,7 @@ int main()
         local_size = 16;
     #endif
     global_size = num_comp_units * local_size;
-    printf("global_size=%i, local_size=%i\n", global_size, local_size);
+    printf("global_size=%lu, local_size=%lu\n", global_size, local_size);
 
     /* Create OpenCL context */
     context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
@@ -166,7 +166,7 @@ int main()
     /* Create kernel argument */
     ret = clSetKernelArg(kernel, 0, sizeof(int), &numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &result_buffer);
-    ret |= clSetKernelArg(kernel, 2, numIterations*sizeof(float), NULL);
+    ret |= clSetKernelArg(kernel, 2, global_size*sizeof(float), NULL);
     ret |= clSetKernelArg(kernel, 3, sizeof(int), &numWorkers);
     if(ret < 0) 
     {
