@@ -36,7 +36,7 @@ int main()
     size_t global_size;
     size_t local_size;
 
-    float *result;
+    float result[1] = {0};
     FILE *fp;
     char fileName[] = "./mykernel.cl";
     char *source_str;
@@ -174,7 +174,7 @@ int main()
        exit(1);
     };
     {
-        printf("Kernel arguments set");
+        printf("Kernel arguments set \n");
     }
 
     /* Enqueue kernel */
@@ -200,7 +200,7 @@ int main()
         printf("Buffer read back");
     }
     
-    printf("Final calculated value: %f \n", result);
+    printf("Final calculated value: %f \n", result[0]);
 
     clReleaseMemObject(result_buffer);
     clReleaseCommandQueue(command_queue);
