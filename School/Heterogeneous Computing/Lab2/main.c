@@ -36,7 +36,6 @@ int main()
     size_t global_size;
     size_t local_size;
 
-    float result[1] = {0};
     FILE *fp;
     char fileName[] = "./mykernel.cl";
     char *source_str;
@@ -157,17 +156,19 @@ int main()
         printf("Kernel created \n");
     }
 
+    float *result = (float *) calloc(1, sizeof(float));
+
     /* Create buffers to hold the text characters and count */
-    cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(result), result, NULL);
+    cl_mem result_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float), NULL, &ret);
 
     int iterations = 16;
     int *numIterations = &iterations;
     int *numWorkers = (int *)&global_size;
     /* Create kernel argument */
-    ret = clSetKernelArg(kernel, 0, sizeof(int), &numIterations);
-    ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &result_buffer);
-    ret |= clSetKernelArg(kernel, 2, global_size*sizeof(float), NULL);
-    ret |= clSetKernelArg(kernel, 3, sizeof(int), &numWorkers);
+    ret = clSetKernelArg(kernel, 0, sizeof(cl_int), (void *)&numIterations);
+    ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&result_buffer);
+    ret |= clSetKernelArg(kernel, 2, global_size*sizeof(cl_float), NULL);
+    ret |= clSetKernelArg(kernel, 3, sizeof(cl_int), (void *)&numWorkers);
     if(ret < 0) 
     {
        printf("Couldn't set a kernel argument");
@@ -179,7 +180,7 @@ int main()
     }
 
     /* Enqueue kernel */
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);
     if(ret < 0) 
     {
        perror("Couldn't enqueue the kernel");
@@ -197,7 +198,7 @@ int main()
     }
     
     /* Read and print the result */
-    ret = clEnqueueReadBuffer(command_queue, result_buffer, CL_TRUE, 0, sizeof(result), &result, 0, NULL, NULL);
+    ret = clEnqueueReadBuffer(command_queue, result_buffer, CL_TRUE, 0, sizeof(float), (void *)result, 0, NULL, NULL);
     if(ret < 0) 
     {
        perror("Couldn't read the buffer");
@@ -209,6 +210,8 @@ int main()
     }
     
     printf("Final calculated value: %f \n", result[0]);
+
+    free(result);
     
     clReleaseMemObject(result_buffer);
     clReleaseCommandQueue(command_queue);
