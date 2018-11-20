@@ -16,7 +16,7 @@ __kernel void calculatePi(int numIterations, __global float *outputPi, __local f
     }
 
     // Have all workers wait until this is completed
-    barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE);
+    barrier(CLK_LOCAL_MEM_FENCE);
     
     // Have each worker calculate their portion of pi
     // This is a private value
@@ -38,7 +38,7 @@ __kernel void calculatePi(int numIterations, __global float *outputPi, __local f
     local_result[gid] = sum;
 	
     // Make sure all workers complete this task before continuing
-    barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE);
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     // Have the last worker add up all of the other worker's values
     // to get the final value
@@ -52,5 +52,7 @@ __kernel void calculatePi(int numIterations, __global float *outputPi, __local f
         }
 	
         outputPi[0] *= 4;	
-    }    
+    }
+
+    barrier(CLK_GLOBAL_MEM_FENCE);
 }
