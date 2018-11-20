@@ -146,7 +146,7 @@ int main()
     cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float), result, &ret);
     errorCheck(ret, "Result Buffer");
     
-    int numIterations[1] = {16};
+    int numIterations[1] = {100};
     /* Create kernel argument */
     ret = clSetKernelArg(kernel, 0, sizeof(cl_int), (void *)&numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&result_buffer);
