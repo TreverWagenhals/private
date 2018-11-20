@@ -18,6 +18,10 @@
 
 #define MAX_SOURCE_SIZE (0x100000)
 #define DEVICE_NAME_LEN 128
+
+void errorCheck(cl_int ret, char *check);
+
+
 static char dev_name[DEVICE_NAME_LEN];
 
 int main()
@@ -86,20 +90,24 @@ int main()
     #ifdef __APPLE__
         clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(local_size), &local_size, NULL);
     #endif
+	
     /* local size reported Altera FPGA is incorrect */
     #ifdef AOCL
         printf("Local size is static 16 for AOCL \n");
         local_size = 16;
     #endif
+	
     global_size = num_comp_units * local_size;
     printf("global_size=%lu, local_size=%lu\n", global_size, local_size);
 
     /* Create OpenCL context */
     context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
-
+    errorCheck(ret, "Create Context");
+    
     /* Create Command Queue */
     command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
-
+    errorCheck(ret, "Create Command Queue");
+    
     #ifdef __APPLE__
         /* Load the source code containing the kernel*/
         fp = fopen(fileName, "r");
@@ -115,11 +123,7 @@ int main()
 
         /* Create Kernel Program from the source */
         program = clCreateProgramWithSource(context, 1, (const char **)&source_str, (const size_t *)&source_size, &ret);
-        if (ret != CL_SUCCESS) 
-        {
-          printf("Failed to create program from source.\n");
-          exit(1);
-        }
+        errorCheck(ret, "Create Program With Source");
     #else
 
         #ifdef AOCL  /* on FPGA we need to create kernel from binary */
@@ -135,32 +139,18 @@ int main()
 
     /* Build Kernel Program */
     ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
-    if (ret != CL_SUCCESS) 
-    {
-      printf("Failed to build program.\n");
-      exit(1);
-    }
-    else
-    {
-        printf("Program built \n");
-    }
+    errorCheck(ret, "Build Program");
 
     /* Create OpenCL Kernel */
     kernel = clCreateKernel(program, "calculatePi", &ret);
-    if (ret != CL_SUCCESS) 
-    {
-      printf("Failed to create kernel.\n");
-      exit(1);
-    }
-    {
-        printf("Kernel created \n");
-    }
+    errorCheck(ret, "Create Kernel");
 
     float *result = (float *) calloc(1, sizeof(float));
 
     /* Create buffers to hold the text characters and count */
-    cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float), result, NULL);
-
+    cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float), result, &ret);
+    errorCheck(ret, "Result Buffer");
+    
     int iterations = 16;
     int *numIterations = &iterations;
     int *numWorkers = (int *)&global_size;
@@ -169,45 +159,17 @@ int main()
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&result_buffer);
     ret |= clSetKernelArg(kernel, 2, global_size*sizeof(cl_float), NULL);
     ret |= clSetKernelArg(kernel, 3, sizeof(cl_int), (void *)&numWorkers);
-    if(ret < 0) 
-    {
-       printf("Couldn't set a kernel argument");
-       exit(1);
-    }
-    else
-    {
-        printf("Kernel arguments set \n");
-    }
+    errorCheck(ret, "Set Kernel Args");
 
     /* Enqueue kernel */
     ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
-    if(ret < 0) 
-    {
-       perror("Couldn't enqueue the kernel");
-       printf("Error code: %d\n", ret);
-       exit(1);
-    }
-    else
-    {
-        printf("Kernel was enqueued \n");
-    }
+    errorCheck(ret, "Kernel Enqueue");
 
-    if (clFinish(command_queue) != CL_SUCCESS)
-    {
-      perror("The kernel didn't finish correctly \n");
-    }
+    errorCheck(clFinish(command_queue), "clFinish");
     
     /* Read and print the result */
-    ret = clEnqueueReadBuffer(command_queue, result_buffer, CL_TRUE, 0, sizeof(float), (void *)result, 0, NULL, NULL);
-    if(ret < 0) 
-    {
-       perror("Couldn't read the buffer");
-       exit(1);
-    }
-    else
-    {
-        printf("Buffer read back \n");
-    }
+    ret = clEnqueueReadBuffer(command_queue, result_buffer, CL_TRUE, 0, sizeof(float), result, 0, NULL, NULL);
+    errorCheck(ret, "Buffer Read");
     
     printf("Final calculated value: %f \n", result[0]);
 
@@ -220,6 +182,19 @@ int main()
     clReleaseContext(context);
 
     return 0;
+}
+
+void errorCheck(cl_int ret, char *check)
+{
+  if (ret != CL_SUCCESS)
+    {
+      printf("ERROR: %s returned error code %d \n", check, ret);
+      exit(1);
+    }
+  else
+    {
+      printf("%s SUCCESS \n", check);
+    }
 }
 
 #ifdef AOCL
