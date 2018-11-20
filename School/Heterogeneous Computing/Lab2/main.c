@@ -157,9 +157,11 @@ int main()
     }
 
     float *result = (float *) calloc(1, sizeof(float));
-
+    float *local_result = (float *) calloc(global_size, sizeof(float));
+    
     /* Create buffers to hold the text characters and count */
     cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float), result, NULL);
+    cl_mem local_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, global_size*sizeof(float), local_result, NULL);
 
     int iterations = 16;
     int *numIterations = &iterations;
@@ -167,7 +169,7 @@ int main()
     /* Create kernel argument */
     ret = clSetKernelArg(kernel, 0, sizeof(cl_int), (void *)&numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&result_buffer);
-    ret |= clSetKernelArg(kernel, 2, global_size*sizeof(cl_float), NULL);
+    ret |= clSetKernelArg(kernel, 2, global_size*sizeof(cl_float), (void *)&local_result);
     ret |= clSetKernelArg(kernel, 3, sizeof(cl_int), (void *)&numWorkers);
     if(ret < 0) 
     {
@@ -198,7 +200,8 @@ int main()
     }
     
     /* Read and print the result */
-    ret = clEnqueueReadBuffer(command_queue, result_buffer, CL_TRUE, 0, sizeof(float), (void *)result, 0, NULL, NULL);
+    ret = clEnqueueReadBuffer(command_queue, local_buffer, CL_TRUE, 0, sizeof(float), (void *)local_result, 0, NULL, NULL);
+    ret |= clEnqueueReadBuffer(command_queue, result_buffer, CL_TRUE, 0, sizeof(float), (void *)result, 0, NULL, NULL);
     if(ret < 0) 
     {
        perror("Couldn't read the buffer");
