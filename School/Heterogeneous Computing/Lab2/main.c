@@ -172,7 +172,8 @@ int main()
     {
        printf("Couldn't set a kernel argument");
        exit(1);
-    };
+    }
+    else
     {
         printf("Kernel arguments set \n");
     }
@@ -185,6 +186,7 @@ int main()
        printf("Error code: %d\n", ret);
        exit(1);
     }
+    else
     {
         printf("Kernel was enqueued \n");
     }
@@ -201,6 +203,7 @@ int main()
        perror("Couldn't read the buffer");
        exit(1);
     }
+    else
     {
         printf("Buffer read back \n");
     }
