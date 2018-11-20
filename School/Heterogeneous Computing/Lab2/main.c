@@ -159,7 +159,7 @@ int main()
     float *result = (float *) calloc(1, sizeof(float));
 
     /* Create buffers to hold the text characters and count */
-    cl_mem result_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float), NULL, &ret);
+    cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float), result, NULL);
 
     int iterations = 16;
     int *numIterations = &iterations;
@@ -180,7 +180,7 @@ int main()
     }
 
     /* Enqueue kernel */
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
     if(ret < 0) 
     {
        perror("Couldn't enqueue the kernel");
