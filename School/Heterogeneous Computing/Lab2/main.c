@@ -45,11 +45,6 @@ int main()
     char *source_str;
     size_t source_size;
 
-    FILE *text_handle;
-    char *text;
-    size_t text_size;
-    int chars_per_item;
-
     #ifdef __APPLE__
         /* Get Platform and Device Info */
         clGetPlatformIDs(1, NULL, &platformCount);
@@ -151,14 +146,12 @@ int main()
     cl_mem result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float), result, &ret);
     errorCheck(ret, "Result Buffer");
     
-    int iterations = 16;
-    int *numIterations = &iterations;
-    int *numWorkers = (int *)&global_size;
+    int numIterations[1] = {16};
     /* Create kernel argument */
     ret = clSetKernelArg(kernel, 0, sizeof(cl_int), (void *)&numIterations);
     ret |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&result_buffer);
     ret |= clSetKernelArg(kernel, 2, global_size*sizeof(cl_float), NULL);
-    ret |= clSetKernelArg(kernel, 3, sizeof(cl_int), (void *)&numWorkers);
+    ret |= clSetKernelArg(kernel, 3, sizeof(cl_int), (void *)&global_size);
     errorCheck(ret, "Set Kernel Args");
 
     /* Enqueue kernel */
