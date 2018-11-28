@@ -2,35 +2,40 @@ __kernel void calculatePi(int numIterations, __global float *outputPi, __local f
 {
     __private const uint gid = get_global_id(0);
     __private const uint lid = get_local_id(0);
-    __private uint offset = numIterations*gid*2; 
-    float sum = 0.0f;
+    __private float offset = numIterations*gid*2; 
+    __private float sum = 0.0f;
+    __private int i;
+    __private float float_i;
 
-    // Have the first worker initialize local_result
-    if (gid == 0)
+    // Have the last worker initialize local_result
+    if (gid == numWorkers-1)
     {
-        for (int i = 0; i < numWorkers; i++)
+        for (i = 0; i < numWorkers; i++)
         {
             local_result[i] = 0.0f;
         }
     }
 
     // Have all workers wait until this is completed
-    barrier(CLK_GLOBAL_MEM_FENCE);
+    barrier(CLK_LOCAL_MEM_FENCE);
+
     
     // Have each worker calculate their portion of pi
     // This is a private value
-    for (int i=0; i<numIterations; i++) 
+    for (i = 0; i < numIterations; i++) 
     {
+	float_i = i;
+	
 	if (i % 2 == 0)
 	{
-           sum += 1 / (1 + 2*i + offset);
+           sum += 4.0 * 1.0 / (1 + 2*float_i + offset);
  	}
 	else
 	{
- 	   sum -= 1 / (1 + 2*i + offset);
+ 	   sum -= 4.0 * 1.0 / (1 + 2*float_i + offset);
 	}
     }
-    
+       
     // Have each worker move their value to the appropriate
     // local_result slot so that the first worker can see it
     // when reducing next
@@ -39,16 +44,17 @@ __kernel void calculatePi(int numIterations, __global float *outputPi, __local f
     // Make sure all workers complete this task before continuing
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    // Have the first worker add up all of the other worker's values
+    // Have the last worker add up all of the other worker's values
     // to get the final value
-    if (gid == 0)
+    // Last worker use verifies that the worker and memory allocation are correct
+    if (gid == numWorkers-1)
     {
         outputPi[0] = 0;
-        for (int i = 0; i < numWorkers; i++)
+        for (i = 0; i < numWorkers; i++)
         {
             outputPi[0] += local_result[i]; 
         }
-	
-        outputPi[0] *= 4;	
-    }    
+    }
+
+    barrier(CLK_GLOBAL_MEM_FENCE);
 }
