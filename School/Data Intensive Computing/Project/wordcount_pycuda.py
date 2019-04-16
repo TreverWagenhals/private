@@ -2,6 +2,8 @@ import pycuda.autoinit
 import numpy
 from pycuda import gpuarray, reduction
 import time
+import sys
+import optparse
  
 def createCudaWordCountKernel():
     initvalue = "0"
@@ -38,7 +40,12 @@ def wordCount(wordcountkernel, bignumpyarray):
     return wordcount
  
 if __name__ == "__main__":
-    bignumpyarray = createDataset("dataset.txt")
+    parser = optparse.OptionParser()
+    parser.add_option('--inputFile', action="store", dest="inputFile", help="Specify the file name to be used as the input dataset", default="dataset.txt")
+    
+    options, args = parser.parse_args()
+    
+    numpyarray = createDataset(options.inputFile)
     wordcountkernel = createCudaWordCountKernel()
-    wordcount = wordCount(wordcountkernel, bignumpyarray)
+    wordcount = wordCount(wordcountkernel, numpyarray)            
     print "The total number of words were", wordcount
