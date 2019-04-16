@@ -6,28 +6,44 @@ import time
 import sys
 import optparse
 
-
 def createWordcountCudaKernel():
     # 32 is ascii code for whitespace
     mapper = "(a[i] == 32)*(b[i] != 32)"
     reducer = "a+b"
     cudaFunctionArguments = "char* a, char* b"
+    start = time.time()
     kernel = ReductionKernel(np.dtype(np.float32), neutral="0",
                              reduce_expr=reducer, map_expr=mapper,
                              arguments=cudaFunctionArguments)
+    stop = time.time()
+    # difference between stop and start time is in seconds. Multiply by 1000 to convert to milliseconds
+    milliseconds = (stop - start) * 1000
+    print "Kernel creation took ", milliseconds, " milliseconds"
     return kernel
 
 
 def createDataset(filename, replication):
-    print "Reading data"
+    start = time.time()
     dataset = np.fromfile(filename, dtype=np.int8)
     originalData = dataset.copy()
-    
+
     for k in xrange(replication):
         dataset = np.append(dataset, originalData)
-    print "Dataset size = ", len(dataset)
-    return np.array(dataset, dtype=np.uint8)
 
+    numpyarray = np.arry(dataset, dtype=np.uint8)
+
+    stop = time.time()
+    milliseconds = (stop - start) * 1000
+
+    print "Dataset preparation took ", milliseconds, " milliseconds"
+    print "Dataset size = ", len(dataset)
+
+    # Does declaring the numpy array first and returning it take longer than just returning the numpy array declaration within the return statement?
+    # ie. return np.array(dataset, dtype=np.uint8)
+    #     instead of
+    #     numpyarray = np.arry(dataset, dtype=np.uint8)
+    #     return numpyarray
+    return numpyarray
 
 def wordCount(kernel, numpyarray):
     print "Uploading array to gpu"
@@ -37,6 +53,7 @@ def wordCount(kernel, numpyarray):
     wordcount = kernel(gpudataset[:-1], gpudataset[1:]).get()
     stop = time.time()
     seconds = (stop-start)
+    # Data set size is in bytes. To convert to Kilobytes, we divide by 1024. To convert to Megabytes, we again divide by 1024. To get Gigabytes, one more division by 1024
     estimatepersecond = (datasetsize/seconds)/(1024*1024*1024)
     print "Word count took ", seconds*1000, " milliseconds"
     print "Estimated throughput ", estimatepersecond, " Gigabytes/s"
@@ -49,7 +66,11 @@ if __name__ == "__main__":
 
     options, args = parser.parse_args()
 
+    start = time.time()
     numpyarray = createDataset(options.inputFile, options.replication)
-    kernel = createCudaKernal()
+    kernel = createWordcountCudaKernal()
     wordcount = wordCount(kernal, numpyarray)
-    print 'Word Count: %s' % wordcount
+    stop = time.time()
+    milliseconds = (stop - start) * 1000
+    print "Total compute time of program was ", milliseconds, " milliseconds"
+    print "Word Count: ", wordcount
