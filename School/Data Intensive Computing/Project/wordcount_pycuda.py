@@ -38,7 +38,7 @@ def wordCount(wordcountkernel, bignumpyarray):
     return wordcount
  
 if __name__ == "__main__":
-    bignumpyarray = createBigDataset("dataset.txt")
+    bignumpyarray = createDataset("dataset.txt")
     wordcountkernel = createCudaWordCountKernel()
     wordcount = wordCount(wordcountkernel, bignumpyarray)
     print "The total number of words were", wordcount
