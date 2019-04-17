@@ -88,8 +88,8 @@ if __name__ == "__main__":
             print "Running with replication=", x
             start = time.time()
             numpyarray = createDataset(options.inputFile, x)
-            kernel = createWordcountCudaKernal()
-            wordcount = wordCount(kernal, numpyarray)
+            kernel = createWordcountCudaKernel()
+            wordcount = wordCount(kernel, numpyarray)
             stop = time.time()
             milliseconds = (stop - start) * 1000
             print "Total Compute Time: ", milliseconds, "ms"
@@ -100,8 +100,8 @@ if __name__ == "__main__":
     else:
         start = time.time()
         numpyarray = createDataset(options.inputFile, int(options.replication, 10))
-        kernel = createWordcountCudaKernal()
-        wordcount = wordCount(kernal, numpyarray)
+        kernel = createWordcountCudaKernel()
+        wordcount = wordCount(kernel, numpyarray)
         stop = time.time()
         milliseconds = (stop - start) * 1000
         print "Total Compute Time: ", milliseconds, "ms"
