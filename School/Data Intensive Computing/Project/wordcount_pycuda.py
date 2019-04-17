@@ -55,7 +55,8 @@ def wordCount(wordcountkernel, bignumpyarray):
     start = time.time()
     wordcount = wordcountkernel(gpudataset[:-1],gpudataset[1:]).get()
     stop = time.time()
-    gpuComputeTime = (stop-start)*1000
+    seconds = (stop-start)
+    gpuComputeTime = seconds * 1000
     throughput = (datasetsize/seconds)/(1024*1024*1024)
     print "word count took ", gpuComputeTime, " milliseconds"
     print "estimated throughput ", throughput, " Gigabytes/s"
