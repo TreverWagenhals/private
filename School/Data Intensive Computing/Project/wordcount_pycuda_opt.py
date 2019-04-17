@@ -85,6 +85,7 @@ if __name__ == "__main__":
     
     if (int(options.replication, 10) == 0):
         for x in [1, 10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]:
+            print "Running with replication=", x
             start = time.time()
             numpyarray = createDataset(options.inputFile, x)
             kernel = createWordcountCudaKernal()
