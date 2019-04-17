@@ -62,15 +62,15 @@ def wordCount(kernel, numpyarray):
 if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option('--inputFile', action="store", dest="inputFile", help="Specify the file name to be used as the input dataset. Default is to look for 'dataset.txt' file in current directory", default="dataset.txt")
-    parser.add_option('--replicate', action="store", dest="replication", help="Specify how many times the data should be replicated. Useful for easily testing large datasets from small samples. Default behavior is to only use the original dataset, ie. replication=1", default=1)
+    parser.add_option('--replicate', action="store", dest="replication", help="Specify how many times the data should be replicated. Useful for easily testing large datasets from small samples. Default behavior is to only use the original dataset, ie. replication=1", default="1")
 
     options, args = parser.parse_args()
 
     start = time.time()
-    numpyarray = createDataset(options.inputFile, options.replication)
+    numpyarray = createDataset(options.inputFile, int(options.replication, 10))
     kernel = createWordcountCudaKernal()
     wordcount = wordCount(kernal, numpyarray)
     stop = time.time()
     milliseconds = (stop - start) * 1000
-    print "Total compute time of program was ", milliseconds, " milliseconds"
+    print "Total Compute Time: ", milliseconds, "ms"
     print "Word Count: ", wordcount
