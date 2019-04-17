@@ -6,10 +6,11 @@ import sys
 import optparse
 import csv
 
-dataPrepTime     = 0
-dataUploadTime   = 0
-throughput       = 0
-totalComputeTime = 0
+dataPrepTime     = 0.0
+dataUploadTime   = 0.0
+gpuComputeTime   = 0.0
+throughput       = 0.0
+totalComputeTime = 0.0
 
 
 def createCudaWordCountKernel():
@@ -37,9 +38,9 @@ def createDataset(filename, replication):
     print "Creating numpy array of dataset"
     numpyarray = numpy.array(bigdataset, dtype=numpy.uint8)
     stop = time.time()
-    milliseconds = (stop - start) * 1000
+    dataPrepTime = (stop - start) * 1000
 
-    print "Dataset preparation took ", milliseconds, " milliseconds"
+    print "Dataset preparation took ", dataPrepTime, " milliseconds"
     return numpyarray
 
 def wordCount(wordcountkernel, bignumpyarray):
