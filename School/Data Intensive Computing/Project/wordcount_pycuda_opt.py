@@ -79,17 +79,32 @@ if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option('--inputFile', action="store", dest="inputFile", help="Specify the file name to be used as the input dataset. Default is to look for 'dataset.txt' file in current directory", default="dataset.txt")
     parser.add_option('--replicate', action="store", dest="replication", help="Specify how many times the data should be replicated. Useful for easily testing large datasets from small samples. Default behavior is to only use the original dataset, ie. replication=1", default="1")
+    parser.add_option('--outputFile', action="store", dest="outputFile", help="Specify where all of the calculations should be saved (.csv file!)", default="wordcount_results.csv")
 
     options, args = parser.parse_args()
 
     start = time.time()
-    numpyarray = createDataset(options.inputFile, int(options.replication, 10))
-    kernel = createWordcountCudaKernal()
-    wordcount = wordCount(kernal, numpyarray)
-    stop = time.time()
-    milliseconds = (stop - start) * 1000
-    print "Total Compute Time: ", milliseconds, "ms"
-    print "Word Count: ", wordcount
-    data = (int(options.replication, 10), dataPrepTime, dataUploadTime, gpuComputeTime, throughput, totalComputeTime)
-    with open(options.outputFile, 'a') as outputFile:
-        outputFile.write('%i, %f, %f, %f, %f, %f\n' % data)
+    
+    if (int(options.replication, 10) == 0):
+        for x in [1, 10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]:
+            numpyarray = createDataset(options.inputFile, int(options.replication, 10))
+            kernel = createWordcountCudaKernal()
+            wordcount = wordCount(kernal, numpyarray)
+            stop = time.time()
+            milliseconds = (stop - start) * 1000
+            print "Total Compute Time: ", milliseconds, "ms"
+            print "Word Count: ", wordcount
+            data = (int(options.replication, 10), dataPrepTime, dataUploadTime, gpuComputeTime, throughput, totalComputeTime)
+            with open(options.outputFile, 'a') as outputFile:
+                outputFile.write('%i, %f, %f, %f, %f, %f\n' % data)
+    else:
+        numpyarray = createDataset(options.inputFile, int(options.replication, 10))
+        kernel = createWordcountCudaKernal()
+        wordcount = wordCount(kernal, numpyarray)
+        stop = time.time()
+        milliseconds = (stop - start) * 1000
+        print "Total Compute Time: ", milliseconds, "ms"
+        print "Word Count: ", wordcount
+        data = (int(options.replication, 10), dataPrepTime, dataUploadTime, gpuComputeTime, throughput, totalComputeTime)
+        with open(options.outputFile, 'a') as outputFile:
+            outputFile.write('%i, %f, %f, %f, %f, %f\n' % data)
