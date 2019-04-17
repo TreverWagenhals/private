@@ -4,6 +4,13 @@ from pycuda import gpuarray, reduction
 import time
 import sys
 import optparse
+import csv
+
+dataPrepTime     = 0
+dataUploadTime   = 0
+throughput       = 0
+totalComputeTime = 0
+
 
 def createCudaWordCountKernel():
     initvalue = "0"
@@ -37,21 +44,28 @@ def createDataset(filename, replication):
 
 def wordCount(wordcountkernel, bignumpyarray):
     print "Uploading array to gpu"
+    
+    start = time.time()
     gpudataset = gpuarray.to_gpu(bignumpyarray)
+    stop = time.time()
+    dataUploadTime = (stop-start)*1000
+    print "GPU array upload took ", dataUploadTime, " milliseconds"    
+    
     datasetsize = len(bignumpyarray)
     start = time.time()
     wordcount = wordcountkernel(gpudataset[:-1],gpudataset[1:]).get()
     stop = time.time()
-    seconds = (stop-start)
-    estimatepersecond = (datasetsize/seconds)/(1024*1024*1024)
-    print "word count took ", seconds*1000, " milliseconds"
-    print "estimated throughput ", estimatepersecond, " Gigabytes/s"
+    gpuComputeTime = (stop-start)*1000
+    throughput = (datasetsize/seconds)/(1024*1024*1024)
+    print "word count took ", gpuComputeTime, " milliseconds"
+    print "estimated throughput ", throughput, " Gigabytes/s"
     return wordcount
 
 if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option('--inputFile', action="store", dest="inputFile", help="Specify the file name to be used as the input dataset", default="dataset.txt")
     parser.add_option('--replicate', action="store", dest="replication", help="Specify how many times the data should be replicated. Useful for easily testing large datasets from small samples", default="1")
+    parser.add_option('--outputFile', action="store", dest="outputFile", help="Specify where all of the calculations should be saved (.csv file!)", default="wordcount_results.csv")
 
     options, args = parser.parse_args()
 
@@ -60,6 +74,11 @@ if __name__ == "__main__":
     wordcountkernel = createCudaWordCountKernel()
     wordcount = wordCount(wordcountkernel, numpyarray)
     stop = time.time()
-    milliseconds = (stop - start) * 1000
-    print "Total Compute Time: ", milliseconds, "ms"
+    totalComputeTime = (stop - start) * 1000
+    print "Total Compute Time: ", totalComputeTime, "ms"
     print "Word Count: ", wordcount
+    data = (int(options.replication, 10), dataPrepTime, dataUploadTime, gpuComputeTime, throughput, totalComputeTime)
+    with open(options.outputFile, 'a') as outputFile:
+        outputFile.write('%i, %f, %f, %f, %f, %f\n' % data)
+    
+    
