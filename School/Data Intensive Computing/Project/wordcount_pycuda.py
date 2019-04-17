@@ -24,6 +24,8 @@ def createCudaWordCountKernel():
     return wordcountkernel
 
 def createDataset(filename, replication):
+    global dataPrepTime
+    
     print "reading data"
     start = time.time()
     dataset = file(filename).read()
@@ -44,6 +46,10 @@ def createDataset(filename, replication):
     return numpyarray
 
 def wordCount(wordcountkernel, bignumpyarray):
+    global dataUploadTime
+    global gpuComputeTime 
+    global throughput
+    
     print "Uploading array to gpu"
     
     start = time.time()
