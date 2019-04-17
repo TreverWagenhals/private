@@ -82,12 +82,11 @@ if __name__ == "__main__":
     parser.add_option('--outputFile', action="store", dest="outputFile", help="Specify where all of the calculations should be saved (.csv file!)", default="wordcount_results.csv")
 
     options, args = parser.parse_args()
-
-    start = time.time()
     
     if (int(options.replication, 10) == 0):
         for x in [1, 10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]:
-            numpyarray = createDataset(options.inputFile, int(options.replication, 10))
+            start = time.time()
+            numpyarray = createDataset(options.inputFile, x)
             kernel = createWordcountCudaKernal()
             wordcount = wordCount(kernal, numpyarray)
             stop = time.time()
@@ -98,6 +97,7 @@ if __name__ == "__main__":
             with open(options.outputFile, 'a') as outputFile:
                 outputFile.write('%i, %f, %f, %f, %f, %f\n' % data)
     else:
+        start = time.time()
         numpyarray = createDataset(options.inputFile, int(options.replication, 10))
         kernel = createWordcountCudaKernal()
         wordcount = wordCount(kernal, numpyarray)
