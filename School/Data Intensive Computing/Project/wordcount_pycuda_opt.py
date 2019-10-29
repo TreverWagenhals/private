@@ -27,7 +27,7 @@ def createWordcountCudaKernel():
 
 def createDataset(filename, replication):
     global dataPrepTime
-    
+
     start = time.time()
     dataset = np.fromfile(filename, dtype=np.int8)
     originalData = dataset.copy()
@@ -35,7 +35,7 @@ def createDataset(filename, replication):
     for k in xrange(replication):
         dataset = np.append(dataset, originalData)
 
-    numpyarray = np.arry(dataset, dtype=np.uint8)
+    numpyarray = np.array(dataset, dtype=np.uint8)
 
     stop = time.time()
     dataPrepTime = (stop - start) * 1000
@@ -52,17 +52,17 @@ def createDataset(filename, replication):
 
 def wordCount(kernel, numpyarray):
     global dataUploadTime
-    global gpuComputeTime 
+    global gpuComputeTime
     global throughput
-    
+
     print "Uploading array to gpu"
-    
+
     start = time.time()
     gpudataset = gpuarray.to_gpu(numpyarray)
     stop = time.time()
     dataUploadTime = (stop-start)*1000
-    print "GPU array upload took ", dataUploadTime, " milliseconds"  
-    
+    print "GPU array upload took ", dataUploadTime, " milliseconds"
+
     datasetsize = len(numpyarray)
     start = time.time()
     wordcount = kernel(gpudataset[:-1], gpudataset[1:]).get()
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_option('--outputFile', action="store", dest="outputFile", help="Specify where all of the calculations should be saved (.csv file!)", default="wordcount_results.csv")
 
     options, args = parser.parse_args()
-    
+
     if (int(options.replication, 10) == 0):
         for x in [1, 10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]:
             print "Running with replication=", x
@@ -91,8 +91,8 @@ if __name__ == "__main__":
             kernel = createWordcountCudaKernel()
             wordcount = wordCount(kernel, numpyarray)
             stop = time.time()
-            milliseconds = (stop - start) * 1000
-            print "Total Compute Time: ", milliseconds, "ms"
+            totalComputeTime = (stop - start) * 1000
+            print "Total Compute Time: ", totalComputeTime, "ms"
             print "Word Count: ", wordcount
             data = (int(options.replication, 10), dataPrepTime, dataUploadTime, gpuComputeTime, throughput, totalComputeTime)
             with open(options.outputFile, 'a') as outputFile:
@@ -103,8 +103,8 @@ if __name__ == "__main__":
         kernel = createWordcountCudaKernel()
         wordcount = wordCount(kernel, numpyarray)
         stop = time.time()
-        milliseconds = (stop - start) * 1000
-        print "Total Compute Time: ", milliseconds, "ms"
+        totalComputeTime = (stop - start) * 1000
+        print "Total Compute Time: ", totalComputeTime, "ms"
         print "Word Count: ", wordcount
         data = (int(options.replication, 10), dataPrepTime, dataUploadTime, gpuComputeTime, throughput, totalComputeTime)
         with open(options.outputFile, 'a') as outputFile:
