@@ -31,8 +31,8 @@ architecture behavior of basys3_seven_seg_wrapper is
   signal sevenSeg1      : std_logic_vector(6 downto 0);
   signal sevenSeg2      : std_logic_vector(6 downto 0);
   signal sevenSeg3      : std_logic_vector(6 downto 0);
-  signal refreshCounter : std_logic_vector(17 downto 0) := (others => '0');
-  signal activeDisplay  : std_logic_vector(3 downto 0)  := "0001";
+  signal refreshCounter : std_logic_vector(17 downto 0);
+  signal activeDisplay  : std_logic_vector(3 downto 0);
 
 begin
 
@@ -70,15 +70,15 @@ begin
 
       if (reset = '1') then
         refreshCounter <= (others => '0');
-        activeDisplay  <= "0001";
+        activeDisplay  <= "1110";
       else
         displaySegment <= activeDisplay;
 
         case activeDisplay is
-          when "0001" => illuminateSegment <= sevenSeg0;
-          when "0010" => illuminateSegment <= sevenSeg1;
-          when "0100" => illuminateSegment <= sevenSeg2;
-          when "1000" => illuminateSegment <= sevenSeg3;
+          when "1110" => illuminateSegment <= sevenSeg0;
+          when "1101" => illuminateSegment <= sevenSeg1;
+          when "1011" => illuminateSegment <= sevenSeg2;
+          when "0111" => illuminateSegment <= sevenSeg3;
           when others => illuminateSegment <= (others => '0');
         end case;
 

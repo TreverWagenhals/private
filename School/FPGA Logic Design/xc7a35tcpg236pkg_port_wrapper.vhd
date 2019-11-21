@@ -3,6 +3,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.math_real.all;
 use IEEE.std_logic_arith.all;
 
+-- Basys 3 uses xc7a35tcpg236-1 Artix-7 FPGA from Xilinx
 entity xc7a35tcpg236pkg_port_wrapper is 
     Port  (
         -- CLK
@@ -62,6 +63,9 @@ entity xc7a35tcpg236pkg_port_wrapper is
         W19 : in std_logic;
         T17 : in std_logic;
         U17 : in std_logic;
+        -- RS-232 (UART TX and RX pins)
+        A18 : out std_logic;
+        B18 : in  std_logic;
         -- VGA [RED0-3, BLUE0-3, GREEN0-3, HSYNC, VSYNC]
         G19 : out std_logic;
         H19 : out std_logic;
@@ -138,6 +142,9 @@ architecture rtl of xc7a35tcpg236pkg_port_wrapper is
         CG    : out std_logic;
         DP    : out std_logic;
         --
+        RXD : in std_logic;
+        TXD : out std_logic;
+        --
         RED0  : out std_logic;
         RED1  : out std_logic;
         RED2  : out std_logic;
@@ -207,6 +214,9 @@ architecture rtl of xc7a35tcpg236pkg_port_wrapper is
     signal CF  : std_logic;
     signal CG  : std_logic;
     signal DP  : std_logic;
+    --
+    signal RXD : std_logic;
+    signal TXD : std_logic;
     --
     signal RED0 : std_logic;
     signal RED1 : std_logic;
@@ -283,7 +293,10 @@ begin
     U4 <= AN1;
     V4 <= AN2;
     W4 <= AN3;
-    
+    --
+    RXD <= B18;
+    A18 <= TXD;
+    --
     G19 <= RED0;
     H19 <= RED1;
     J19 <= RED2;
@@ -354,6 +367,8 @@ begin
         CF    => CF,
         CG    => CG,
         DP    => DP,
+        RXD   => RXD,
+        TXD   => TXD,
         RED0  => RED0,
         RED1  => RED1,
         RED2  => RED2,

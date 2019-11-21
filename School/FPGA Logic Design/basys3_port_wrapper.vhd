@@ -57,6 +57,8 @@ entity basys3_port_wrapper is
     CF    : out std_logic;
     CG    : out std_logic;
     DP    : out std_logic;
+    TXD   : out std_logic;
+    RXD   : in  std_logic;
     --
     RED0  : out std_logic;
     RED1  : out std_logic;
@@ -90,6 +92,8 @@ architecture behavior of basys3_port_wrapper is
   signal vgaGreen          : std_logic_vector(3 downto 0);
   signal vgaSyncH          : std_logic;
   signal vgaSyncV          : std_logic;
+  signal uartRX            : std_logic;
+  signal uartTX            : std_logic;
 
   component basys3_top_wrapper
     port (
@@ -106,6 +110,9 @@ architecture behavior of basys3_port_wrapper is
       buttonLeft        : in  std_logic;
       buttonRight       : in  std_logic;
       buttonCenter      : in  std_logic;
+      -- UART PINS
+      uartRX            : in  std_logic;
+      uartTX            : out std_logic;
       -- VGA PINS
       vgaRed            : out std_logic_vector(3 downto 0);
       vgaBlue           : out std_logic_vector(3 downto 0);
@@ -183,10 +190,11 @@ begin
   CE <= illuminateSegment(4);
   CF <= illuminateSegment(5);
   CG <= illuminateSegment(6);
+  
+  TXD <= uartTX;
+  uartRX <= RXD;
 
   DP <= '0';
-
-
 
   u_basys3_top_wrapper : basys3_top_wrapper
     port map (
@@ -200,6 +208,8 @@ begin
       buttonLeft        => buttonLeft,
       buttonRight       => buttonRight,
       buttonCenter      => buttonCenter,
+      uartRX            => uartRX,
+      uartTX            => uartTX,
       vgaRed            => vgaRed,
       vgaBlue           => vgaBlue,
       vgaGreen          => vgaGreen,
