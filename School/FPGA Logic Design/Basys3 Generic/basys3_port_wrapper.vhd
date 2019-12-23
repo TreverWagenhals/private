@@ -57,8 +57,45 @@ entity basys3_port_wrapper is
     CF    : out std_logic;
     CG    : out std_logic;
     DP    : out std_logic;
+    --
     TXD   : out std_logic;
     RXD   : in  std_logic;
+    --
+    JA1   : inout std_logic;
+    JA2   : inout std_logic;
+    JA3   : inout std_logic;
+    JA4   : inout std_logic;
+    JA7   : inout std_logic;
+    JA8   : inout std_logic;
+    JA9   : inout std_logic;
+    JA10  : inout std_logic;   
+    --  
+    JB1   : inout std_logic;
+    JB2   : inout std_logic;
+    JB3   : inout std_logic;
+    JB4   : inout std_logic;
+    JB7   : inout std_logic;
+    JB8   : inout std_logic;
+    JB9   : inout std_logic;
+    JB10  : inout std_logic;     
+    --
+    JC1   : inout std_logic;
+    JC2   : inout std_logic;
+    JC3   : inout std_logic;
+    JC4   : inout std_logic;
+    JC7   : inout std_logic;
+    JC8   : inout std_logic;
+    JC9   : inout std_logic;
+    JC10  : inout std_logic;     
+    --
+    JXADC1   : inout std_logic;
+    JXADC2   : inout std_logic;
+    JXADC3   : inout std_logic;
+    JXADC4   : inout std_logic;
+    JXADC7   : inout std_logic;
+    JXADC8   : inout std_logic;
+    JXADC9   : inout std_logic;
+    JXADC10  : inout std_logic;                                 
     --
     RED0  : out std_logic;
     RED1  : out std_logic;
@@ -94,8 +131,44 @@ architecture behavior of basys3_port_wrapper is
   signal vgaSyncV          : std_logic;
   signal uartRX            : std_logic;
   signal uartTX            : std_logic;
+  
+  signal pmodJA1          : std_logic;
+  signal pmodJA2          : std_logic;
+  signal pmodJA3          : std_logic;
+  signal pmodJA4          : std_logic;
+  signal pmodJA7          : std_logic;
+  signal pmodJA8          : std_logic;
+  signal pmodJA9          : std_logic;
+  signal pmodJA10         : std_logic;      
+  
+  signal pmodJB1          : std_logic;
+  signal pmodJB2          : std_logic;
+  signal pmodJB3          : std_logic;
+  signal pmodJB4          : std_logic;
+  signal pmodJB7          : std_logic;
+  signal pmodJB8          : std_logic;
+  signal pmodJB9          : std_logic;
+  signal pmodJB10         : std_logic; 
+  
+  signal pmodJC1          : std_logic;
+  signal pmodJC2          : std_logic;
+  signal pmodJC3          : std_logic;
+  signal pmodJC4          : std_logic;
+  signal pmodJC7          : std_logic;
+  signal pmodJC8          : std_logic;
+  signal pmodJC9          : std_logic;
+  signal pmodJC10         : std_logic;   
+  
+  signal pmodJXADC1          : std_logic;
+  signal pmodJXADC2          : std_logic;
+  signal pmodJXADC3          : std_logic;
+  signal pmodJXADC4          : std_logic;
+  signal pmodJXADC7          : std_logic;
+  signal pmodJXADC8          : std_logic;
+  signal pmodJXADC9          : std_logic;
+  signal pmodJXADC10         : std_logic;             
 
-  component basys3_top_wrapper_generic
+  component basys3_top_wrapper
     port (
       clk               : in  std_logic;
       switch            : in  std_logic_vector(15 downto 0);
@@ -113,6 +186,42 @@ architecture behavior of basys3_port_wrapper is
       -- UART PINS
       uartRX            : in  std_logic;
       uartTX            : out std_logic;
+      --
+      pmodJA1           : inout std_logic;
+      pmodJA2           : inout std_logic;
+      pmodJA3           : inout std_logic;
+      pmodJA4           : inout std_logic;
+      pmodJA7           : inout std_logic;
+      pmodJA8           : inout std_logic;
+      pmodJA9           : inout std_logic;
+      pmodJA10          : inout std_logic;      
+      --
+      pmodJB1           : inout std_logic;
+      pmodJB2           : inout std_logic;
+      pmodJB3           : inout std_logic;
+      pmodJB4           : inout std_logic;
+      pmodJB7           : inout std_logic;
+      pmodJB8           : inout std_logic;
+      pmodJB9           : inout std_logic;
+      pmodJB10          : inout std_logic;      
+      --
+      pmodJC1           : inout std_logic;
+      pmodJC2           : inout std_logic;
+      pmodJC3           : inout std_logic;
+      pmodJC4           : inout std_logic;
+      pmodJC7           : inout std_logic;
+      pmodJC8           : inout std_logic;
+      pmodJC9           : inout std_logic;
+      pmodJC10          : inout std_logic;  
+      --
+      pmodJXADC1           : inout std_logic;
+      pmodJXADC2           : inout std_logic;
+      pmodJXADC3           : inout std_logic;
+      pmodJXADC4           : inout std_logic;
+      pmodJXADC7           : inout std_logic;
+      pmodJXADC8           : inout std_logic;
+      pmodJXADC9           : inout std_logic;
+      pmodJXADC10          : inout std_logic;                                
       -- VGA PINS
       vgaRed            : out std_logic_vector(3 downto 0);
       vgaBlue           : out std_logic_vector(3 downto 0);
@@ -193,10 +302,46 @@ begin
   
   TXD <= uartTX;
   uartRX <= RXD;
+  
+  ja1  <= pmodJA1;
+  ja2  <= pmodJA2;
+  ja3  <= pmodJA3;
+  ja4  <= pmodJA4;
+  ja7  <= pmodJA7;
+  ja8  <= pmodJA8;
+  ja9  <= pmodJA9;
+  ja10 <= pmodJA10;   
+  
+  jb1  <= pmodJB1;
+  jb2  <= pmodJB2;
+  jb3  <= pmodJB3;
+  jb4  <= pmodJB4;
+  jb7  <= pmodJB7;
+  jb8  <= pmodJB8;
+  jb9  <= pmodJB9;
+  jb10 <= pmodJB10;
+  
+  jc1  <= pmodJC1;
+  jc2  <= pmodJC2;
+  jc3  <= pmodJC3;
+  jc4  <= pmodJC4;
+  jc7  <= pmodJC7;
+  jc8  <= pmodJC8;
+  jc9  <= pmodJC9;
+  jc10 <= pmodJC10;       
+  
+  jxadc1  <= pmodJXADC1;
+  jxadc2  <= pmodJXADC2;
+  jxadc3  <= pmodJXADC3;
+  jxadc4  <= pmodJXADC4;
+  jxadc7  <= pmodJXADC7;
+  jxadc8  <= pmodJXADC8;
+  jxadc9  <= pmodJXADC9;
+  jxadc10 <= pmodJXADC10;                  
 
   DP <= '0';
 
-  u_basys3_top_wrapper : basys3_top_wrapper_generic
+  u_basys3_top_wrapper : basys3_top_wrapper
     port map (
       clk               => clk,
       switch            => switch,
@@ -210,6 +355,43 @@ begin
       buttonCenter      => buttonCenter,
       uartRX            => uartRX,
       uartTX            => uartTX,
+      --
+      pmodJA1           => pmodJA1,
+      pmodJA2           => pmodJA2,
+      pmodJA3           => pmodJA3,
+      pmodJA4           => pmodJA4,
+      pmodJA7           => pmodJA7,
+      pmodJA8           => pmodJA8,
+      pmodJA9           => pmodJA9,
+      pmodJA10          => pmodJA10,  
+      --  
+      pmodJB1           => pmodJB1,
+      pmodJB2           => pmodJB2,
+      pmodJB3           => pmodJB3,
+      pmodJB4           => pmodJB4,
+      pmodJB7           => pmodJB7,
+      pmodJB8           => pmodJB8,
+      pmodJB9           => pmodJB9,
+      pmodJB10          => pmodJB10,    
+      --
+      pmodJC1           => pmodJC1,
+      pmodJC2           => pmodJC2,
+      pmodJC3           => pmodJC3,
+      pmodJC4           => pmodJC4,
+      pmodJC7           => pmodJC7,
+      pmodJC8           => pmodJC8,
+      pmodJC9           => pmodJC9,
+      pmodJC10          => pmodJC10, 
+      --      
+      pmodJXADC1           => pmodJXADC1,
+      pmodJXADC2           => pmodJXADC2,
+      pmodJXADC3           => pmodJXADC3,
+      pmodJXADC4           => pmodJXADC4,
+      pmodJXADC7           => pmodJXADC7,
+      pmodJXADC8           => pmodJXADC8,
+      pmodJXADC9           => pmodJXADC9,
+      pmodJXADC10          => pmodJXADC10, 
+      --                               
       vgaRed            => vgaRed,
       vgaBlue           => vgaBlue,
       vgaGreen          => vgaGreen,
