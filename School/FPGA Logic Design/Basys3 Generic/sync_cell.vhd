@@ -24,8 +24,9 @@ begin
     if rising_edge (clk) then
         sync_pipeline(0)                               <= data;
         sync_pipeline(NUMBER_OF_SYNC_FLOPS-1 downto 1) <= sync_pipeline(NUMBER_OF_SYNC_FLOPS-2 downto 0);
-        synced_data                                    <= sync_pipeline(NUMBER_OF_SYNC_FLOPS-1);
     end if;
   end process;
+  
+  synced_data <= sync_pipeline(NUMBER_OF_SYNC_FLOPS-1);
   
 end RTL;
