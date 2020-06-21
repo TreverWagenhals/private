@@ -84,10 +84,10 @@ architecture behavior of basys3_top_wrapper is
   signal reset        : std_logic;
   signal reset_n      : std_logic;
  
-  signal displaySegment0  : std_logic_vector(3 downto 0);  
-  signal displaySegment1  : std_logic_vector(3 downto 0);  
-  signal displaySegment2  : std_logic_vector(3 downto 0);  
-  signal displaySegment3  : std_logic_vector(3 downto 0);   
+  signal dataSegment0  : std_logic_vector(3 downto 0);  
+  signal dataSegment1  : std_logic_vector(3 downto 0);  
+  signal dataSegment2  : std_logic_vector(3 downto 0);  
+  signal dataSegment3  : std_logic_vector(3 downto 0);   
      
   signal uart_rx_data_valid : std_logic;
   signal uart_rx_data_byte : std_logic_vector(7 downto 0);
@@ -132,10 +132,10 @@ begin
       reset             => reset,
       displaySegment    => displaySegment,
       illuminateSegment => illuminateSegment,
-      dataSegment0      => displaySegment0(3 downto 0),
-      dataSegment1      => displaySegment1(3 downto 0),
-      dataSegment2      => displaySegment2(3 downto 0),
-      dataSegment3      => displaySegment3(3 downto 0)); 
+      dataSegment0      => dataSegment0(3 downto 0),
+      dataSegment1      => dataSegment1(3 downto 0),
+      dataSegment2      => dataSegment2(3 downto 0),
+      dataSegment3      => dataSegment3(3 downto 0)); 
 
   -- Instance a debouncer circuit for the left button on the Basys 3
   u_button_debouncer_left : entity work.button_debouncer
@@ -358,12 +358,12 @@ u_basys3_xadc : entity work.basys3_xadc
           vauxChannelsN     => vauxChannelsN,
           addressSelect     => switch(15 downto 12),
           conversionSelect  => switch(11 downto 10),
-          readADC           => debouncedButtonCenter,
-          outputADC         => outputADC);          
-          
-displaySegment0 <= (others => '0');
-displaySegment0 <= outputADC(3 downto 0);
-displaySegment0 <= outputADC(7 downto 4);
-displaySegment0 <= outputADC(11 downto 8);    
+          readADC           => debouncedButtonUp,
+          outputADC         => outputADC);    
+                    
+dataSegment0 <= (others => '0');
+dataSegment1 <= outputADC(3 downto 0);
+dataSegment2 <= outputADC(7 downto 4);
+dataSegment3 <= outputADC(11 downto 8);    
                                                                                      
 end behavior;

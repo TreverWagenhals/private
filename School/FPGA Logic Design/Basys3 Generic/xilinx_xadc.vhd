@@ -24,11 +24,14 @@ architecture behavior of basys3_xadc is
   signal adcAddress        : std_logic_vector(6 downto 0);
   signal adcReading        : std_logic_vector(15 downto 0);
   signal adcReadingLatched : std_logic_vector(15 downto 0);
-  signal decimalReadingExpanded  : std_logic_vector(33 downto 0); 
-  
+  signal decimalReadingExpanded  : std_logic_vector(33 downto 0);
+
+  signal bcd : std_logic_vector(11 downto 0);
+  signal ADC : std_logic_vector(11 downto 0);
+
 begin
 
-    -- Instantiate the XADC primitive within the Series 7 Xilinx FPGA that the Basys 3 uses                    
+    -- Instantiate the XADC primitive within the Series 7 Xilinx FPGA that the Basys 3 uses
     U0 : XADC
         generic map (
             INIT_40 => X"0000", -- config reg 0
@@ -89,19 +92,24 @@ begin
             DCLK         => clk,
             DEN          => '1',
             DI           => (others => '0'),
-            DWE          => '0');    
-            
+            DWE          => '0');
+
+    u_bin8bcd : entity work.bin8bcd
+              port map (
+              bin               => ADC(7 downto 0),
+              bcd(11 downto 0)  => bcd);
+
       process (clk)
       begin
         if rising_edge(clk) then
-        
+
             readADC_R1 <= readADC;
-            
+
             -- Whenever the button is pressed, latch in the ADC value so it's not constantly updating
             if (readADC = '1' and readADC_R1 = '0') then
                 adcReadingLatched <= adcReading;
             end if;
-            
+
             -- Determine which address the XADC instance should be pointing to. 4 voltage sensors and a temperature sensor = 5 configurations
             case (addressSelect) is
                 when "0000" => adcAddress <= b"001_0110"; -- Address 0x16 / 22 : Voltage sensor 6, value in volts = ADC / 4096
@@ -111,58 +119,55 @@ begin
                 when "1111" => adcAddress <= b"000_0000"; -- Address 0x00 / 0  : Temperature sensor, value in degrees celcius = ((ADC x 503.975) / 4096) - 273.15
                 when others => adcAddress <= b"000_0000"; -- Address 0x00 / 0  : Temperature sensor, value in degrees celcius = ((ADC x 503.975) / 4096) - 273.15
             end case;
-            
+
             -- Determine what value should be displayed to the 7-seg based on the two switches
             case (conversionSelect) is
-                -- Take the XADC reading and pass it directly to the 7-seg. Ignore the 4 LSBs since they're unused.
-                -- Note that this is a RAW ADC code and does not represent the temperature value. This is just to show what the ADC value looks like
-                when "000" => 
-                    outputADC <= adcReadingLatched(15 downto 4);
-                -- Take the XADC reading and convert to decimal using the given formula from Xilinx: 
-                -- Temperature (C) = ((ADC Code * 503.975) / 4096) - 273.15
-                -- Round 503.975 to 504 and 273.15 to 273 so that the math is integer based
-                -- The LSB in this case will have a value of .123, so the displayed value may have rounding errors.
-                when "001" => 
+                when "00" =>
+                    -- Take the XADC reading and pass it directly to the 7-seg. Ignore the 4 LSBs since they're unused.
+                    -- Note that this is a RAW ADC code and does not represent the temperature value. This is just to show what the ADC value looks like
+                    -- If you want to know what the actual temperature is, you will have to use the equation given my Xilinx.
+                    -- Temperature (C) = ((ADC Code * 503.975) / 4096) - 273.15
+                    ADC <= adcReadingLatched(15 downto 4);
+                    outputADC <= ADC;
+                when "01" =>
+                    -- Take the XADC reading and convert to decimal using the given formula from Xilinx:
+                    -- Temperature (C) = ((ADC Code * 503.975) / 4096) - 273.15
+                    -- Round 503.975 to 504 and 273.15 to 273 so that the math is integer based
+                    -- The LSB in this case will have a value of .123, so the displayed value may have rounding errors, but they'll likely be too small to cause issues
                     -- Look at the 12 bits of actual ADC data and then multiply by 504
-                    -- 12 bits + 9 bits is only 21 bits and the register is 34 bits, so we need to 0 pad the top 13 bits 
-                    decimalReadingExpanded   <= "0000000000000" & std_logic_vector(unsigned(adcReadingLatched(15 downto 4)) * to_unsigned(504, 9)); 
+                    -- 12 bits + 9 bits is only 21 bits and the register is 34 bits, so we need to 0 pad the top 13 bits
+                    decimalReadingExpanded   <= "0000000000000" & std_logic_vector(unsigned(adcReadingLatched(15 downto 4)) * to_unsigned(504, 9));
                     -- Ignore lowest 12 bits since that's the same as dividing by 4096, then subtract 273
-                    outputADC    <= std_logic_vector(unsigned(decimalReadingExpanded(23 downto 12)) - to_unsigned(273, 9));    
-                -- Take the XADC reading and convert the LSB to 0.125
-                -- Temperature (C) = ((ADC Code * 503.975) / 4096) - 273.15
-                -- Not sure if this is accurate at all since we're not doing subtraction here?
-                when "010" =>
-                    decimalReadingExpanded     <= "0000000000000" & std_logic_vector(unsigned(adcReadingLatched(15 downto 4)) * to_unsigned(505, 9)); 
-                    -- Ignore the lower 9 bits since that's the same as dividing by 512
-                    outputADC      <= decimalReadingExpanded(20 downto 9);                
-                -- Multiply our ADC value value by 505 and divide by 512 to convert the LSB to 0.125C (.125/.123 = 1.01626, 512/505 = 1.01386)
-                -- Temperature (C) = (((ADC Code * 503.975) / 4096) * 505/512) - (273.15 * 505/512)
-                -- Temperature (C) = (((ADC Code * 503.975 * 505) / 4096 * 512)) - (269.415)
-                -- Temperature (C) = (((ADC Code * 503.975 * 505) / 4096 * 512)) - (269.415)
-                -- Temperature (C) = (((ADC Code * 503.975 * 505) / 4096 * 512)) - (269.415)           
-                when "011" =>                 
+                    ADC    <= std_logic_vector(unsigned(decimalReadingExpanded(23 downto 12)) - to_unsigned(273, 9));
+                    outputADC <= bcd;
+                when "10" =>
+                    -- Multiply our ADC value value by 505 and divide by 512 to convert the LSB to 0.125C (.125/.123 = 1.01626, 512/505 = 1.01386)
+                    -- Temperature (C) = ((ADC Code * 503.975 * 512) / 4096 * 505) - (273.15 * 512 / 505)
+                    -- Temperature (C) = ((ADC Code * 503.975 * 512) / 4096 * 505) - (276.936)
+                    -- Temperature (C) = ((ADC Code * 258,035.2) / 2^21) - (276.936)
+                    -- Round to 258,035 and 277 so that the math is integer based
                     -- 12 bits + 18 bits is only 30 bits and the register is 34 bits, so we need to 0 pad the top 4 bits
-                    decimalReadingExpanded        <= "0000" & std_logic_vector(unsigned(adcReadingLatched(15 downto 4)) * to_unsigned(254_507, 18)); 
-                    -- Ignore the lower 19 bits since dividing by 512 is dropping 8 bits, and dividing by 4096 is ignoring 11 bits
-                    outputADC         <= std_logic_vector(unsigned(decimalReadingExpanded(29 downto 18)) - to_unsigned(269, 9));   
-                -- Multiply our ADC value by 4163 and divide by 4096 to convert the LSB to 0.125C (125/123 = 1.01626, 4163/4096 = 1.0163574)                   
-                when "100" => 
-                    -- 12 bits + 13 bits is only 25 bits and the register is 34 bits, so we need to 0 pad the top 9 bits
-                    decimalReadingExpanded     <= "000000000" & std_logic_vector(unsigned(adcReadingLatched(15 downto 4)) * to_unsigned(4163, 13)); 
-                    -- Ignoring the lower 12 bits is the same as dividing by 4096
-                    outputADC      <= decimalReadingExpanded(24 downto 13);            
-                -- Take the XADC reading and convert to decimal using the given formula from Xilinx: 
-                -- Temperature (C) = ((ADC Code * 503.975) / 4096) - 273.15
-                -- Since we are converting the LSB resolution to .125 from .123, we multiply each side by 4163 / 4096
-                -- Temperature (C) * (4163/4096) = ((ADC Code * 503.975 * 4163) / 4096 * 4096) - (273.15 * 4163 / 4096)
-                -- Temperature (C) = ((ADC Code *  2,098,047.925) / 2^24) - 277.618
-                -- Round to 2,098,048 and 278 so that the math is integer based                                
-                when others => 
-                    decimalReadingExpanded        <= std_logic_vector(unsigned(adcReadingLatched(15 downto 4)) * to_unsigned(2_098_048, 22)); 
+                    decimalReadingExpanded        <= "0000" & std_logic_vector(unsigned(adcReadingLatched(15 downto 4)) * to_unsigned(258_035, 18));
+                    -- Ignore the lower 21 bits since dividing by 512 is dropping 9 bits, and dividing by 4096 is ignoring 12 bits
+                    ADC                           <= std_logic_vector(unsigned(decimalReadingExpanded(32 downto 21)) - to_unsigned(277, 9));
+                    outputADC                     <= bcd;
+                when "11"=>
+                    -- Take the XADC reading and convert to decimal using the given formula from Xilinx:
+                    -- Temperature (C) = ((ADC Code * 503.975) / 4096) - 273.15
+                    -- Since we are converting the LSB resolution to .125 from .123, we multiply each side by 4163 / 4096
+                    -- Temperature (C) = ((ADC Code * 503.975 * 4163) / 4096 * 4096) - (273.15 * 4163 / 4096)
+                    -- Temperature (C) = ((ADC Code *  2,098,047.925) / 2^24) - 277.618
+                    -- Round to 2,098,048 and 278 so that the math is integer based
+                    decimalReadingExpanded        <= std_logic_vector(unsigned(adcReadingLatched(15 downto 4)) * to_unsigned(2_098_048, 22));
                     -- Ignore the lower 24 bits which is the same as dividing by 4096 * 4096 (2^24)
                     -- Since we're removing 24 bits of the 34 bits, we need to 0 pad it with 2 bits to get back to 12 bits
-                    outputADC         <= "00" & std_logic_vector(unsigned(decimalReadingExpanded(33 downto 24)) - to_unsigned(278, 9));   
-            end case; 
+                    ADC                           <= "00" & std_logic_vector(unsigned(decimalReadingExpanded(33 downto 24)) - to_unsigned(278, 9));
+                    outputADC                     <= ADC;
+                when others =>
+                    decimalReadingExpanded <= others => 'X';
+                    ADC                    <= others => 'X';
+                    outputADC              <= others => 'X';
+            end case;
         end if;
-      end process;          
+      end process;
 end behavior;

@@ -12,7 +12,6 @@ entity sync_cell is
     synced_data        : out std_logic);
 end sync_cell;
  
- 
 architecture rtl of sync_cell is
  
     signal sync_pipeline : std_logic_vector(NUMBER_OF_SYNC_FLOPS-1 downto 0);
@@ -29,4 +28,4 @@ begin
   
   synced_data <= sync_pipeline(NUMBER_OF_SYNC_FLOPS-1);
   
-end RTL;
+end rtl;
