@@ -22,7 +22,6 @@ architecture behavior of button_debouncer is
   constant DEBOUNCE_CYCLES_CONSTANT : std_logic_vector(debounceCount'length-1 downto 0) := conv_std_logic_vector(DEBOUNCE_CYCLES, debounceCount'length);
 
 begin
-
   process (clk)
   begin
     if rising_edge(clk) then
@@ -36,8 +35,6 @@ begin
         buttonDebounced <= '0';
         debounceCount   <= (others => '0');
       end if;
-
     end if;
   end process;
-
 end behavior;
