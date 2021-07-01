@@ -26,7 +26,6 @@ begin
   process (clk)
   begin
     if rising_edge(clk) then
-
       if (buttonInput = '1') then
         if (debounceCount /= DEBOUNCE_CYCLES_CONSTANT) then
           debounceCount <= unsigned(debounceCount) + 1;
